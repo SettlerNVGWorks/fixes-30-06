@@ -56,6 +56,13 @@ export const sportsAPI = {
   getTelegramStats: () => api.get('/api/telegram/stats'),
 };
 
+// Matches API functions
+export const matchesAPI = {
+  getTodayMatches: () => api.get('/api/matches/today'),
+  getMatchesBySport: (sport) => api.get(`/api/matches/sport/${sport}`),
+  refreshMatches: () => api.post('/api/matches/refresh'),
+};
+
 // Health check
 export const healthAPI = {
   check: () => api.get('/api/health'),
