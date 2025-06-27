@@ -182,20 +182,20 @@ backend:
         agent: "main"
         comment: "✅ TESTED: /api/stats and /api/predictions endpoints working. Sample data seeded correctly."
         
-  - task: "JWT authentication middleware"
+  - task: "Today's matches API endpoints"
     implemented: true
     working: true
-    file: "middleware.js"
+    file: "routes/api.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Created middleware for token validation and user context injection"
+        comment: "Implemented endpoints for today's matches, sport-specific matches, and match refresh"
       - working: true
-        agent: "main"
-        comment: "✅ TESTED: Middleware validates JWT tokens correctly. Protected routes accessible only with valid tokens."
+        agent: "testing"
+        comment: "✅ TESTED: All match endpoints working correctly. /api/matches/today returns matches for all 4 sports with proper structure. Each match has analysis text. Odds are displayed correctly. /api/matches/refresh successfully updates matches. Sport filtering with /api/matches/sport/{sport} works as expected."
 
 frontend:
   - task: "Move account button next to hamburger button"
