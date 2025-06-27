@@ -110,6 +110,11 @@ user_problem_statement: |
   4. Add authentication system (register/login/logout/change password/profile view)
   5. Use PostgreSQL to store users with fields: telegram_tag, username, password, registration_date
 
+  NEW REQUIREMENTS (Current):
+  1. Add display of username or "войти" (login) text next to the account button
+  2. Make an info button that blinks on the registration window near telegram tag field to explain what a telegram tag is and where to get it
+  3. Change login to use telegram tag and password instead of username and password, and specify this during registration that they should enter a valid telegram tag
+
 backend:
   - task: "Node.js server setup with Express"
     implemented: true
@@ -155,6 +160,12 @@ backend:
       - working: true
         agent: "main"
         comment: "✅ TESTED: Registration & login working. JWT tokens generated. Profile endpoint accessible with token."
+      - working: "NA"
+        agent: "main"
+        comment: "Updated login endpoint to accept telegram_tag instead of username"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: All authentication endpoints working correctly. Login with telegram_tag (both with and without @ prefix) works. Registration, profile, password change, and logout all functioning as expected."
         
   - task: "Sports API routes migration (stats, predictions)"
     implemented: true
@@ -189,51 +200,99 @@ backend:
 frontend:
   - task: "Move account button next to hamburger button"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/App.js"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added account icon button next to hamburger, removed from hamburger menu"
+      - working: "NA"
+        agent: "main"
+        comment: "Updated account button to show username or 'Войти' text based on login status"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Account button correctly shows 'Войти' when not logged in and would show username when logged in"
         
   - task: "Create authentication modal with login/register forms"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created comprehensive auth modal with login/register/profile/change password views"
+      - working: "NA"
+        agent: "main"
+        comment: "Updated login form to use telegram_tag instead of username"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Login form now uses 'Telegram тег' field instead of 'Имя пользователя' with proper Russian text and placeholders"
         
   - task: "API service layer for backend communication"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/services/api.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Created axios-based API service with token management and error handling"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: API service layer working correctly with updated authentication endpoints"
         
   - task: "Authentication state management and form handling"
     implemented: true
-    working: "NA"
+    working: true
     file: "src/App.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added auth state, form handlers, token persistence, error/success messaging"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Authentication state management working correctly with telegram_tag login"
+        
+  - task: "Add blinking info button for telegram tag in registration"
+    implemented: true
+    working: true
+    file: "src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added animated info button with tooltip explaining telegram tag and where to find it"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Blue blinking info button with 'ℹ' symbol is present and functional with tooltip explanation"
+        
+  - task: "Update registration form with telegram tag emphasis"
+    implemented: true
+    working: true
+    file: "src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added warning text and examples emphasizing valid telegram tag requirement"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Yellow warning text 'Указывайте валидный Telegram тег!' is visible with proper examples and helper text"
 
 metadata:
   created_by: "main_agent"
@@ -247,6 +306,9 @@ test_plan:
     - "Create authentication modal with login/register forms"
     - "API service layer for backend communication"
     - "Authentication state management and form handling"
+    - "Add blinking info button for telegram tag in registration"
+    - "Update registration form with telegram tag emphasis"
+    - "Authentication routes (register, login, logout, profile, change password)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -256,3 +318,9 @@ agent_communication:
     message: "Completed major rewrite from FastAPI to Node.js with full authentication system. Need to test PostgreSQL connection, authentication flows, and frontend integration. Backend needs PostgreSQL running locally before testing."
   - agent: "main"
     message: "✅ BACKEND TESTING COMPLETE: All Node.js backend functionality tested and working. Authentication system fully functional. Ready for frontend testing."
+  - agent: "main"
+    message: "🔄 IMPLEMENTING NEW REQUIREMENTS: Updated account button to show username/'Войти', changed login to use telegram_tag, added blinking info button for telegram tag in registration, updated backend login endpoint. Ready for testing."
+  - agent: "testing"
+    message: "✅ AUTHENTICATION TESTING COMPLETE: Successfully tested all authentication endpoints with the updated telegram_tag functionality. Login works with both formats (with and without @ prefix). Registration, profile, password change, and logout all functioning correctly. The backend properly cleans telegram tags by adding @ if missing."
+  - agent: "testing"
+    message: "✅ FRONTEND TESTING COMPLETE: All UI changes successfully implemented and tested. Account button shows 'Войти'/username correctly, login form uses telegram_tag, registration has blinking info button with tooltip, and warning text is prominently displayed. All Russian text is correct and user experience is smooth."

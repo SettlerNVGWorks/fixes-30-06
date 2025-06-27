@@ -144,7 +144,7 @@ function App() {
 
     try {
       const response = await authAPI.login({
-        username: formData.username,
+        telegram_tag: formData.telegram_tag,
         password: formData.password
       });
 
@@ -303,15 +303,18 @@ function App() {
               </div>
             </div>
         <div className="flex items-center space-x-3">
-          {/* Account Button */}
+          {/* Account Button with Text */}
           <button
             onClick={() => setShowAccount(true)}
-            className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center animate-pulse hover:bg-white/20 transition"
+            className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition group"
             aria-label="Аккаунт"
           >
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
+            <span className="text-white font-medium text-sm hidden sm:block">
+              {isLoggedIn && currentUser ? currentUser.username : 'Войти'}
+            </span>
           </button>
           
           {/* Hamburger Menu Button */}
@@ -743,16 +746,19 @@ function App() {
                 {authMode === 'login' ? (
                   <div>
                     <h2 className="text-2xl font-bold mb-4 text-center">Вход в систему</h2>
+                    <p className="text-sm text-gray-300 mb-4 text-center">
+                      Используйте свой Telegram тег и пароль для входа
+                    </p>
                     <form onSubmit={handleLogin} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Имя пользователя</label>
+                        <label className="block text-sm font-medium mb-2">Telegram тег</label>
                         <input
                           type="text"
-                          name="username"
-                          value={formData.username}
+                          name="telegram_tag"
+                          value={formData.telegram_tag}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите имя пользователя"
+                          placeholder="@username"
                           required
                           disabled={authLoading}
                         />
@@ -782,29 +788,54 @@ function App() {
                 ) : (
                   <div>
                     <h2 className="text-2xl font-bold mb-4 text-center">Регистрация</h2>
+                    <p className="text-sm text-yellow-400 mb-4 text-center font-medium">
+                      ⚠️ Указывайте валидный Telegram тег! Он понадобится для входа в систему.
+                    </p>
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Telegram тег</label>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <label className="block text-sm font-medium">Telegram тег</label>
+                          <div className="relative group">
+                            <button
+                              type="button"
+                              className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center animate-pulse hover:animate-none cursor-help"
+                              title="Информация о Telegram теге"
+                            >
+                              ℹ
+                            </button>
+                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 w-64">
+                              <div className="text-center">
+                                <p className="font-semibold mb-1">Что такое Telegram тег?</p>
+                                <p className="mb-2">Это ваше имя пользователя в Telegram, начинающееся с @</p>
+                                <p className="text-yellow-300">Найти: Настройки → Изменить профиль → Имя пользователя</p>
+                              </div>
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                            </div>
+                          </div>
+                        </div>
                         <input
                           type="text"
                           name="telegram_tag"
                           value={formData.telegram_tag}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="@username"
+                          placeholder="@username (обязательно с @)"
                           required
                           disabled={authLoading}
                         />
+                        <p className="text-xs text-gray-400 mt-1">
+                          Пример: @myusername (этот тег будет использоваться для входа)
+                        </p>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Имя пользователя</label>
+                        <label className="block text-sm font-medium mb-2">Имя пользователя (отображаемое)</label>
                         <input
                           type="text"
                           name="username"
                           value={formData.username}
                           onChange={handleInputChange}
                           className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите имя пользователя"
+                          placeholder="Введите имя для отображения"
                           required
                           disabled={authLoading}
                         />

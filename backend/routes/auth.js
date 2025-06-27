@@ -75,21 +75,24 @@ router.post('/register', async (req, res) => {
 // Login user
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { telegram_tag, password } = req.body;
 
     // Validation
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Имя пользователя и пароль обязательны' });
+    if (!telegram_tag || !password) {
+      return res.status(400).json({ error: 'Telegram тег и пароль обязательны' });
     }
 
-    // Find user
+    // Clean telegram tag
+    const cleanTelegramTag = telegram_tag.startsWith('@') ? telegram_tag : `@${telegram_tag}`;
+
+    // Find user by telegram_tag
     const userResult = await pool.query(
-      'SELECT id, telegram_tag, username, password, registration_date FROM users WHERE username = $1',
-      [username]
+      'SELECT id, telegram_tag, username, password, registration_date FROM users WHERE telegram_tag = $1',
+      [cleanTelegramTag]
     );
 
     if (userResult.rows.length === 0) {
-      return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+      return res.status(401).json({ error: 'Неверный Telegram тег или пароль' });
     }
 
     const user = userResult.rows[0];
@@ -97,7 +100,7 @@ router.post('/login', async (req, res) => {
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Неверное имя пользователя или пароль' });
+      return res.status(401).json({ error: 'Неверный Telegram тег или пароль' });
     }
 
     // Generate JWT token
