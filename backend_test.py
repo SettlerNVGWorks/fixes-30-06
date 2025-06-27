@@ -126,6 +126,141 @@ class SportPredictionsAPITester:
             print(f"Recent Predictions Count: {len(recent_predictions)}")
         return success
 
+    def test_today_matches_endpoint(self):
+        """Test the today's matches endpoint"""
+        success, response = self.run_test(
+            "Today's Matches Endpoint",
+            "GET",
+            "api/matches/today",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Date: {response.get('date')}")
+            print(f"Total Matches: {response.get('total_matches')}")
+            print(f"Sports Available: {response.get('sports_available')}")
+            
+            # Check if all 4 sports are available
+            sports_available = response.get('sports_available', [])
+            required_sports = ['football', 'baseball', 'hockey', 'esports']
+            missing_sports = [sport for sport in required_sports if sport not in sports_available]
+            
+            if missing_sports:
+                print(f"⚠️ Missing sports: {', '.join(missing_sports)}")
+                success = False
+            else:
+                print("✅ All required sports are available")
+            
+            # Check match structure and analysis
+            matches = response.get('matches', {})
+            for sport, sport_matches in matches.items():
+                print(f"\n{sport.capitalize()} matches: {len(sport_matches)}")
+                
+                if sport_matches:
+                    sample_match = sport_matches[0]
+                    print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
+                    print(f"Match time: {sample_match.get('match_time')}")
+                    
+                    # Check odds
+                    print(f"Odds team1: {sample_match.get('odds_team1')}")
+                    print(f"Odds team2: {sample_match.get('odds_team2')}")
+                    if sport == 'football':
+                        print(f"Odds draw: {sample_match.get('odds_draw')}")
+                    
+                    # Check analysis
+                    analysis = sample_match.get('analysis')
+                    if analysis:
+                        print(f"Analysis length: {len(analysis)} characters")
+                    else:
+                        print("⚠️ No analysis found for match")
+                        success = False
+        
+        return success
+
+    def test_sport_matches_endpoint(self, sport):
+        """Test the sport-specific matches endpoint"""
+        success, response = self.run_test(
+            f"{sport.capitalize()} Matches Endpoint",
+            "GET",
+            f"api/matches/sport/{sport}",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Sport: {response.get('sport')}")
+            print(f"Total Matches: {response.get('total_matches')}")
+            
+            matches = response.get('matches', [])
+            if matches:
+                print(f"Matches returned: {len(matches)}")
+                
+                # Check first match
+                sample_match = matches[0]
+                print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
+                print(f"Match time: {sample_match.get('match_time')}")
+                
+                # Check odds
+                print(f"Odds team1: {sample_match.get('odds_team1')}")
+                print(f"Odds team2: {sample_match.get('odds_team2')}")
+                if sport == 'football':
+                    print(f"Odds draw: {sample_match.get('odds_draw')}")
+                
+                # Check analysis
+                analysis = sample_match.get('analysis')
+                if analysis:
+                    print(f"Analysis length: {len(analysis)} characters")
+                else:
+                    print("⚠️ No analysis found for match")
+                    success = False
+                
+                # Verify all matches are for the requested sport
+                all_correct_sport = all(match.get('sport') == sport for match in matches)
+                if all_correct_sport:
+                    print(f"✅ All matches are for {sport}")
+                else:
+                    print(f"⚠️ Some matches are not for {sport}")
+                    success = False
+            else:
+                print(f"⚠️ No matches returned for {sport}")
+                success = False
+        
+        return success
+
+    def test_refresh_matches_endpoint(self):
+        """Test the refresh matches endpoint"""
+        success, response = self.run_test(
+            "Refresh Matches Endpoint",
+            "POST",
+            "api/matches/refresh",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Message: {response.get('message')}")
+            print(f"Total Matches: {response.get('total_matches')}")
+            print(f"Updated At: {response.get('updated_at')}")
+            
+            # Verify matches were actually refreshed by checking today's matches again
+            refresh_success, today_response = self.run_test(
+                "Today's Matches After Refresh",
+                "GET",
+                "api/matches/today",
+                200
+            )
+            
+            if refresh_success:
+                total_matches = today_response.get('total_matches', 0)
+                if total_matches > 0:
+                    print(f"✅ Successfully refreshed {total_matches} matches")
+                else:
+                    print("⚠️ No matches found after refresh")
+                    success = False
+        
+        return success
+
     def test_user_registration(self):
         """Test user registration"""
         # Generate a unique username and telegram tag
@@ -325,6 +460,15 @@ def main():
     hockey_stats_test = tester.test_sport_stats_endpoint("hockey")
     esports_stats_test = tester.test_sport_stats_endpoint("esports")
     telegram_stats_test = tester.test_telegram_stats_endpoint()
+    
+    # Test today's matches endpoints
+    print("\n=== Testing Today's Matches Endpoints ===")
+    today_matches_test = tester.test_today_matches_endpoint()
+    football_matches_test = tester.test_sport_matches_endpoint("football")
+    baseball_matches_test = tester.test_sport_matches_endpoint("baseball")
+    hockey_matches_test = tester.test_sport_matches_endpoint("hockey")
+    esports_matches_test = tester.test_sport_matches_endpoint("esports")
+    refresh_matches_test = tester.test_refresh_matches_endpoint()
     
     # Test authentication flow
     print("\n=== Testing Authentication Flow ===")
