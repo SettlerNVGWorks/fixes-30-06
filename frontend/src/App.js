@@ -4,6 +4,7 @@ import crownImage from './source_pics/main-pic.jpg';
 import logoVideo from './source_pics/main-vid.mp4';
 import onewin_logo from './source_pics/1win-mid-1280x720-1.png';
 import { authAPI, sportsAPI } from './services/api';
+import TodayMatches from './components/TodayMatches';
 
 function App() {
   const [showServices, setShowServices] = useState(false);
