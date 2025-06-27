@@ -210,6 +210,105 @@ router.get('/telegram/stats', async (req, res) => {
   }
 });
 
+// Get today's matches
+router.get('/matches/today', async (req, res) => {
+  try {
+    const { sport } = req.query;
+    
+    let matches;
+    if (sport) {
+      matches = await matchParser.getMatchesBySport(sport.toLowerCase());
+    } else {
+      matches = await matchParser.getTodayMatches();
+    }
+
+    // Group matches by sport for better organization
+    const groupedMatches = matches.reduce((acc, match) => {
+      if (!acc[match.sport]) {
+        acc[match.sport] = [];
+      }
+      acc[match.sport].push({
+        id: match.id,
+        team1: match.team1,
+        team2: match.team2,
+        match_time: match.match_time,
+        odds_team1: match.odds_team1,
+        odds_team2: match.odds_team2,
+        odds_draw: match.odds_draw,
+        analysis: match.analysis,
+        sport: match.sport,
+        status: match.status
+      });
+      return acc;
+    }, {});
+
+    res.json({
+      success: true,
+      date: new Date().toISOString().split('T')[0],
+      total_matches: matches.length,
+      matches: groupedMatches,
+      sports_available: Object.keys(groupedMatches)
+    });
+  } catch (error) {
+    console.error('Today matches error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Ошибка получения матчей на сегодня' 
+    });
+  }
+});
+
+// Refresh today's matches (force update)
+router.post('/matches/refresh', async (req, res) => {
+  try {
+    const matches = await matchParser.forceRefreshMatches();
+    
+    res.json({
+      success: true,
+      message: 'Матчи обновлены',
+      total_matches: matches.length,
+      updated_at: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Refresh matches error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Ошибка обновления матчей' 
+    });
+  }
+});
+
+// Get matches by specific sport
+router.get('/matches/sport/:sport', async (req, res) => {
+  try {
+    const { sport } = req.params;
+    const validSports = ['football', 'hockey', 'baseball', 'esports'];
+    
+    if (!validSports.includes(sport.toLowerCase())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Неподдерживаемый вид спорта',
+        available_sports: validSports
+      });
+    }
+
+    const matches = await matchParser.getMatchesBySport(sport.toLowerCase());
+    
+    res.json({
+      success: true,
+      sport: sport,
+      total_matches: matches.length,
+      matches: matches
+    });
+  } catch (error) {
+    console.error(`Sport ${sport} matches error:`, error);
+    res.status(500).json({ 
+      success: false,
+      error: `Ошибка получения матчей по ${sport}` 
+    });
+  }
+});
+
 // Helper function to seed sample predictions
 async function seedPredictions() {
   try {
