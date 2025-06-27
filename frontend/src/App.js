@@ -399,6 +399,9 @@ function App() {
         </div>
       </section>
 
+      {/* Today's Matches Section */}
+      <TodayMatches />
+
       {/* Sports Sections */}
       <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
         <div className="container mx-auto px-4">
