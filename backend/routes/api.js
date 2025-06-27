@@ -1,7 +1,9 @@
 const express = require('express');
 const { pool } = require('../database');
+const MatchParser = require('../services/matchParser');
 
 const router = express.Router();
+const matchParser = new MatchParser();
 
 // Sample predictions data (will be seeded into database)
 const samplePredictions = [
