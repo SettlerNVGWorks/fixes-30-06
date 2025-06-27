@@ -293,6 +293,21 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Yellow warning text 'Указывайте валидный Telegram тег!' is visible with proper examples and helper text"
+        
+  - task: "Implement Today's Matches section on homepage"
+    implemented: true
+    working: true
+    file: "src/components/TodayMatches.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created TodayMatches component to display today's sports matches with analysis"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: TodayMatches component is correctly positioned between Hero and 'Наши специализации' sections. It loads data from /api/matches/today API endpoint. All 4 sports (футбол, бейсбол, хоккей, киберспорт) are displayed with correct icons and color schemes. Each match shows teams, time in HH:MM МСК format, odds with appropriate color coding, and expert analysis in a gold-bordered box with lightbulb icon. Refresh button works correctly. Component is responsive on all device sizes. CTA block with Telegram link displays at the bottom."
 
 metadata:
   created_by: "main_agent"
