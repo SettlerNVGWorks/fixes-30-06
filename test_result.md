@@ -324,6 +324,7 @@ test_plan:
     - "Add blinking info button for telegram tag in registration"
     - "Update registration form with telegram tag emphasis"
     - "Authentication routes (register, login, logout, profile, change password)"
+    - "Implement Today's Matches section on homepage"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
