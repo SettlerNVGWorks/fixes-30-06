@@ -1035,8 +1035,8 @@ class RealMatchParser {
         venue: 'ЦСКА Арена',
         competition: 'КХЛ',
         source: 'thesportsdb',
-        logo_team1: this.getTeamLogoUrl('ЦСКА Москва', 'hockey'),
-        logo_team2: this.getTeamLogoUrl('СКА Санкт-Петербург', 'hockey')
+        logo_team1: await this.getTeamLogoUrl('ЦСКА Москва', 'hockey'),
+        logo_team2: await this.getTeamLogoUrl('СКА Санкт-Петербург', 'hockey')
       },
       {
         sport: 'hockey',
@@ -1046,8 +1046,8 @@ class RealMatchParser {
         venue: 'ВТБ Арена',
         competition: 'КХЛ',
         source: 'thesportsdb',
-        logo_team1: this.getTeamLogoUrl('Динамо Москва', 'hockey'),
-        logo_team2: this.getTeamLogoUrl('Спартак Москва', 'hockey')
+        logo_team1: await this.getTeamLogoUrl('Динамо Москва', 'hockey'),
+        logo_team2: await this.getTeamLogoUrl('Спартак Москва', 'hockey')
       }
     ];
   }
