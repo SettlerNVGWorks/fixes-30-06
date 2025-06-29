@@ -12,28 +12,43 @@ class RealMatchParser {
     this.apis = {
       odds: {
         url: 'https://api.the-odds-api.com',
-        key: process.env.ODDS_API_KEY || 'demo', // Will use demo for testing
-        rateLimit: 500 // per month on free tier
+        key: process.env.ODDS_API_KEY || 'demo',
+        rateLimit: 500
       },
       football: {
         url: 'https://api.football-data.org/v4',
-        key: process.env.FOOTBALL_DATA_KEY || '', // Free tier
-        rateLimit: 10 // per minute
+        key: process.env.FOOTBALL_DATA_KEY || '',
+        rateLimit: 10
+      },
+      footballFree: {
+        url: 'https://www.freefootballapi.com/api',
+        key: null, // Free API, no key needed
+        rateLimit: 60
       },
       baseball: {
         url: 'https://statsapi.mlb.com/api/v1',
         key: null, // Free API, no key needed
-        rateLimit: 50 // per minute
+        rateLimit: 50
       },
       hockey: {
+        url: 'https://statsapi.web.nhl.com/api/v1',
+        key: null, // Free official NHL API
+        rateLimit: 30
+      },
+      hockeyBackup: {
         url: 'https://www.thesportsdb.com/api/v1/json',
-        key: process.env.SPORTSDB_KEY || '1', // Test key
-        rateLimit: 30 // per minute
+        key: process.env.SPORTSDB_KEY || '1',
+        rateLimit: 30
       },
       esports: {
         url: 'https://api.pandascore.co',
-        key: process.env.PANDASCORE_KEY || '', // Free tier
-        rateLimit: 10 // per minute on free tier
+        key: process.env.PANDASCORE_KEY || '',
+        rateLimit: 10
+      },
+      esportsFree: {
+        url: 'https://esportstracker.azurewebsites.net/api',
+        key: null, // Free tracker API
+        rateLimit: 30
       }
     };
 
