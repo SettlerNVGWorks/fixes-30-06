@@ -1591,6 +1591,9 @@ class RealMatchParser {
               competition: match.competition,
               game: match.game, // For esports
               venue: match.venue,
+              logo_team1: match.logo_team1,
+              logo_team2: match.logo_team2,
+              realism_score: match.realism_score,
               status: 'scheduled',
               updated_at: new Date()
             }
