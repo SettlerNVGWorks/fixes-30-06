@@ -436,6 +436,52 @@ class SportPredictionsAPITester:
                 else:
                     print("❌ Some matches are missing team logos after refresh")
                     success = False
+                
+                # Check for football matches (should be 0 in off-season)
+                football_matches = matches.get('football', [])
+                if len(football_matches) == 0:
+                    print("✅ No football matches found after refresh (correct for off-season)")
+                else:
+                    print(f"❌ Found {len(football_matches)} football matches after refresh during off-season")
+                    success = False
+                
+                # Check for fake matches
+                fake_matches = []
+                for sport, sport_matches in matches.items():
+                    for match in sport_matches:
+                        team1 = match.get('team1', '')
+                        team2 = match.get('team2', '')
+                        if ((team1 == 'Real Madrid' and team2 == 'Barcelona') or 
+                            (team1 == 'Barcelona' and team2 == 'Real Madrid') or
+                            (team1 == 'Manchester City' and team2 == 'Liverpool') or
+                            (team1 == 'Liverpool' and team2 == 'Manchester City')):
+                            fake_matches.append(f"{team1} vs {team2}")
+                
+                if not fake_matches:
+                    print("✅ No fake matches found after refresh")
+                else:
+                    print(f"❌ Found fake matches after refresh: {', '.join(fake_matches)}")
+                    success = False
+                
+                # Check for mock data
+                mock_sources = []
+                for sport, sport_matches in matches.items():
+                    for match in sport_matches:
+                        if match.get('source') in ['mock-generator', 'mock_parser']:
+                            mock_sources.append(match)
+                
+                if not mock_sources:
+                    print("✅ No mock data found after refresh - all matches are from real sources")
+                else:
+                    print(f"❌ Found {len(mock_sources)} matches with mock data after refresh")
+                    success = False
+                
+                # Check logs for "No football matches found" message
+                # This would require checking server logs, which we can't do directly in this test
+                print("⚠️ Cannot directly check server logs for 'No football matches found' message")
+            else:
+                print("❌ Failed to get matches after refresh")
+                success = False
         
         return success
 
