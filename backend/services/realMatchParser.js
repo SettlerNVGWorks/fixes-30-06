@@ -612,7 +612,7 @@ class RealMatchParser {
   }
 
   // Generate realistic football matches based on current leagues
-  generateRealisticFootballMatches() {
+  async generateRealisticFootballMatches() {
     const realTeams = [
       // Premier League teams
       { team1: 'Manchester City', team2: 'Arsenal', league: 'Premier League' },
