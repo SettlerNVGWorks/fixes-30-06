@@ -1097,15 +1097,14 @@ class RealMatchParser {
     }
   }
 
-  // Parse from PandaScore API with enhanced data collection
+  // Parse from PandaScore API with enhanced data collection (USE REAL TIMES)
   async parseFromPandaScore() {
-    const today = this.getTodayString();
     const axios = this.getAxiosInstance('esports');
     
     this.updateApiCallTime('esports');
     
     try {
-      // Get upcoming matches (simpler query first)
+      // Get upcoming matches (real times, not adjusted)
       const upcomingResponse = await axios.get(
         `${this.apis.esports.url}/matches/upcoming`,
         {
@@ -1125,14 +1124,12 @@ class RealMatchParser {
         matches = upcomingResponse.data
           .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
           .slice(0, 4)
-          .map((match, index) => {
-            // Create today's schedule for these matches
-            const hour = 16 + index * 2;
+          .map((match) => {
             return {
               sport: 'esports',
               team1: match.opponents[0].opponent.name,
               team2: match.opponents[1].opponent.name,
-              match_time: `${today.iso}T${hour}:00:00Z`,
+              match_time: match.begin_at || match.scheduled_at, // Use REAL time from API
               game: match.videogame.name,
               competition: match.league?.name || match.tournament?.name || 'Tournament',
               tournament_tier: match.tournament?.tier,
@@ -1140,12 +1137,11 @@ class RealMatchParser {
               source: 'pandascore-api',
               logo_team1: this.getTeamLogoUrl(match.opponents[0].opponent.name, 'esports'),
               logo_team2: this.getTeamLogoUrl(match.opponents[1].opponent.name, 'esports'),
-              match_id: match.id,
-              original_time: match.begin_at
+              match_id: match.id
             };
           });
           
-        console.log(`✅ PandaScore API returned ${matches.length} real esports matches`);
+        console.log(`✅ PandaScore API returned ${matches.length} real esports matches with real times`);
       }
 
       return matches;
