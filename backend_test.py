@@ -74,6 +74,7 @@ class SportPredictionsAPITester:
             200
         )
         if success:
+            print(f"Success: {response.get('success')}")
             print(f"Total Predictions: {response.get('total_predictions')}")
             print(f"Success Rate: {response.get('success_rate')}%")
             print(f"Active Bettors: {response.get('active_bettors')}")
@@ -496,6 +497,106 @@ class SportPredictionsAPITester:
         
         return all_success
 
+    def test_logo_stats_endpoint(self):
+        """Test the logo stats endpoint"""
+        success, response = self.run_test(
+            "Logo Stats Endpoint",
+            "GET",
+            "api/logos/stats",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            
+            # Check logo statistics
+            total_logos = response.get('total_logos', 0)
+            real_logos = response.get('real_logos', 0)
+            placeholder_logos = response.get('placeholder_logos', 0)
+            percentage_real = response.get('percentage_real', 0)
+            
+            print(f"Total Logos: {total_logos}")
+            print(f"Real Logos: {real_logos}")
+            print(f"Placeholder Logos: {placeholder_logos}")
+            print(f"Percentage Real: {percentage_real}%")
+            
+            # Check if total matches sum of real and placeholder
+            if total_logos == real_logos + placeholder_logos:
+                print("✅ Total logos count is correct")
+            else:
+                print("❌ Total logos count doesn't match sum of real and placeholder")
+                success = False
+            
+            # Check if percentage is calculated correctly
+            if total_logos > 0:
+                expected_percentage = round((real_logos / total_logos) * 100)
+                if expected_percentage == percentage_real:
+                    print("✅ Percentage real is calculated correctly")
+                else:
+                    print(f"❌ Percentage real calculation is incorrect: expected {expected_percentage}, got {percentage_real}")
+                    success = False
+            
+            # Check sport breakdown
+            by_sport = response.get('by_sport', [])
+            if by_sport:
+                print("\nLogo stats by sport:")
+                for sport_stats in by_sport:
+                    sport = sport_stats.get('_id', 'unknown')
+                    count = sport_stats.get('count', 0)
+                    real = sport_stats.get('real_logos', 0)
+                    placeholder = sport_stats.get('placeholder_logos', 0)
+                    
+                    print(f"{sport.capitalize()}: {count} total, {real} real, {placeholder} placeholder")
+                    
+                    # Verify counts for each sport
+                    if count == real + placeholder:
+                        print(f"✅ {sport.capitalize()} counts are correct")
+                    else:
+                        print(f"❌ {sport.capitalize()} counts don't match: {count} != {real} + {placeholder}")
+                        success = False
+            else:
+                print("⚠️ No sport breakdown available")
+        
+        return success
+
+    def test_logo_cleanup_endpoint(self):
+        """Test the logo cleanup endpoint"""
+        success, response = self.run_test(
+            "Logo Cleanup Endpoint",
+            "POST",
+            "api/logos/cleanup",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Message: {response.get('message')}")
+            
+            # Verify cleanup was successful by checking logo stats
+            stats_success, stats_response = self.run_test(
+                "Logo Stats After Cleanup",
+                "GET",
+                "api/logos/stats",
+                200
+            )
+            
+            if stats_success:
+                total_logos = stats_response.get('total_logos', 0)
+                print(f"Total logos after cleanup: {total_logos}")
+                
+                # We can't verify exact counts since we don't know how many should be deleted
+                # But we can verify the endpoint works and returns valid data
+                if 'total_logos' in stats_response and 'real_logos' in stats_response:
+                    print("✅ Cleanup completed successfully and stats are available")
+                else:
+                    print("❌ Stats after cleanup are incomplete")
+                    success = False
+            else:
+                print("❌ Failed to get stats after cleanup")
+                success = False
+        
+        return success
+
 def main():
     # Get the backend URL from the frontend .env file
     backend_url = "https://7f7902cb-f9dc-4d05-9d3f-058107630c9e.preview.emergentagent.com"
@@ -530,6 +631,14 @@ def main():
     print("\n=== Testing Refresh Matches with Logo Updates ===")
     refresh_matches_test = tester.test_refresh_matches_endpoint()
     
+    # Test logo statistics
+    print("\n=== Testing Logo Statistics ===")
+    logo_stats_test = tester.test_logo_stats_endpoint()
+    
+    # Test logo cleanup
+    print("\n=== Testing Logo Cleanup ===")
+    logo_cleanup_test = tester.test_logo_cleanup_endpoint()
+    
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
     
@@ -545,6 +654,8 @@ def main():
     print(f"5. Match Status System: {'✅ PASSED' if match_status_test else '❌ FAILED'}")
     print(f"6. Today's Matches with Logos: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
     print(f"7. Refresh Matches with Logo Updates: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
+    print(f"8. Logo Statistics: {'✅ PASSED' if logo_stats_test else '❌ FAILED'}")
+    print(f"9. Logo Cleanup: {'✅ PASSED' if logo_cleanup_test else '❌ FAILED'}")
     
     # Return success if all tests passed
     return 0 if tester.tests_passed == tester.tests_run else 1
