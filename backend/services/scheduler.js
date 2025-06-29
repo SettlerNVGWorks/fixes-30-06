@@ -39,16 +39,17 @@ class Scheduler {
 
       // Очищаем сегодняшние матчи для обновления
       const today = this.getTodayString();
-      await this.matchParser.pool.query('DELETE FROM matches WHERE match_date = $1', [today]);
+      const db = getDatabase();
+      await db.collection('matches').deleteMany({ match_date: today });
       console.log('🗑️ Удалены старые матчи на сегодня');
 
       // Очищаем кеш
-      this.matchParser.cache.clear();
+      this.matchParser.clearCache();
       console.log('💾 Очищен кеш матчей');
 
-      // Генерируем новые свежие матчи
-      const newMatches = await this.generateFreshMatches();
-      console.log(`📊 Сгенерировано ${newMatches.length} новых матчей`);
+      // Парсим новые актуальные матчи с реальных источников
+      const newMatches = await this.matchParser.getTodayMatches();
+      console.log(`📊 Спарсено ${newMatches.length} новых актуальных матчей`);
 
       // Сохраняем в базу данных
       await this.matchParser.saveMatchesToDatabase(newMatches);
