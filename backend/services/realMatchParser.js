@@ -378,7 +378,21 @@ class RealMatchParser {
             return allMatches;
           }
         } catch (error) {
-          console.log('⚠️ Football-Data API failed, trying backup sources...');
+          console.log('⚠️ Football-Data API failed, trying alternatives...');
+        }
+      }
+
+      // Try new API-Football as priority alternative
+      if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key) {
+        try {
+          allMatches = await this.parseFromAPIFootball();
+          if (allMatches.length >= 2) {
+            console.log(`✅ Got ${allMatches.length} football matches from API-Football`);
+            this.setCacheData(cacheKey, allMatches);
+            return allMatches;
+          }
+        } catch (error) {
+          console.log('⚠️ API-Football failed, trying free sources...');
         }
       }
 
