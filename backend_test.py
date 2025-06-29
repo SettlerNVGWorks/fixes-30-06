@@ -207,13 +207,16 @@ class SportPredictionsAPITester:
                             print(f"⚠️ Esports match has alternative source: {match.get('source')} (expected pandascore-api)")
                             # Not failing the test for this as it might use a fallback
                     
-                    # Check realism score
-                    if 'realism_score' in match:
-                        print(f"Realism score: {match.get('realism_score', 0) * 100}%")
-                        if match.get('realism_score', 0) >= 0.9:
-                            print("✅ Realism score is 90% or higher")
+                    # Check if match has real API source flag
+                    if 'real_api_source' in match:
+                        if match.get('real_api_source') == True:
+                            print("✅ Match has real_api_source flag set to true")
                         else:
-                            print(f"⚠️ Realism score is below 90%: {match.get('realism_score', 0) * 100}%")
+                            print("❌ Match has real_api_source flag set to false")
+                            success = False
+                    else:
+                        print("❌ Match is missing real_api_source flag")
+                        success = False
         
         return success
 
