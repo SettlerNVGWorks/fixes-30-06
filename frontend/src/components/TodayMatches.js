@@ -186,15 +186,39 @@ const TodayMatches = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   {sportMatches.map((match) => (
                     <div key={match.id} className="bg-gray-900/50 rounded-lg p-5 border border-gray-700 hover:border-gold-500/50 transition-all">
-                      {/* Match header */}
+                      {/* Match header with team logos */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="text-center flex-1">
-                          <div className="text-lg font-semibold text-white mb-1">
-                            {match.team1}
+                          <div className="flex items-center justify-center space-x-3 mb-2">
+                            {match.logo_team1 && (
+                              <img 
+                                src={match.logo_team1} 
+                                alt={match.team1}
+                                className="w-8 h-8 rounded-full object-contain"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <div className="text-lg font-semibold text-white">
+                              {match.team1}
+                            </div>
                           </div>
                           <div className="text-sm text-gray-400">vs</div>
-                          <div className="text-lg font-semibold text-white mt-1">
-                            {match.team2}
+                          <div className="flex items-center justify-center space-x-3 mt-2">
+                            <div className="text-lg font-semibold text-white">
+                              {match.team2}
+                            </div>
+                            {match.logo_team2 && (
+                              <img 
+                                src={match.logo_team2} 
+                                alt={match.team2}
+                                className="w-8 h-8 rounded-full object-contain"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
