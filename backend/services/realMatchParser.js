@@ -973,8 +973,8 @@ class RealMatchParser {
         match_time: `${this.getTodayString().iso} 19:30:00`,
         competition: 'NHL',
         source: 'balldontlie-nhl',
-        logo_team1: this.getTeamLogoUrl('Toronto Maple Leafs', 'hockey'),
-        logo_team2: this.getTeamLogoUrl('Montreal Canadiens', 'hockey')
+        logo_team1: await this.getTeamLogoUrl('Toronto Maple Leafs', 'hockey'),
+        logo_team2: await this.getTeamLogoUrl('Montreal Canadiens', 'hockey')
       },
       {
         sport: 'hockey',
