@@ -405,7 +405,8 @@ test_plan:
     - "Update registration form with telegram tag emphasis"
     - "Authentication routes (register, login, logout, profile, change password)"
     - "Implement Today's Matches section on homepage"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Implement Today's Matches section on homepage"
   test_all: false
   test_priority: "high_first"
   
