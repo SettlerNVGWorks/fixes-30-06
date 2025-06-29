@@ -1108,7 +1108,8 @@ class RealMatchParser {
       
       // Add analysis and additional data
       for (let match of allMatches) {
-        match.analysis = await this.getRandomAnalysisBySport(match.sport);
+        const baseAnalysis = await this.getRandomAnalysisBySport(match.sport);
+        match.analysis = this.addBettingRecommendation(baseAnalysis, match);
         match.match_date = this.getTodayString().iso;
         match.prediction = this.generatePrediction(match);
         match.id = this.generateMatchId(match);
