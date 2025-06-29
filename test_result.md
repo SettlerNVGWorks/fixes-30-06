@@ -388,9 +388,50 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ ISSUE: The update schedule text in the header still shows old times '12:00 и 00:00 МСК' instead of the new required times '09:00 и 19:00 МСК'. However, the footer text correctly shows '09:00 и 19:00 МСК | Без мок-данных'. Match statuses (ЗАПЛАНИРОВАН/ИДЁТ МАТЧ/ЗАВЕРШЁН/ВОЗМОЖНО ИДЁТ) are implemented correctly with proper colors and icons. All 4 sports are displayed with their matches. Team logos, match times, and odds are displayed correctly. The refresh button works properly."
+  - task: "Automatic team logo fetching system"
+    implemented: true
+    working: true
+    file: "services/logoService.js, services/realMatchParser.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created comprehensive LogoService with multiple API sources (SportsDB, Wikipedia, Logo.dev) for automatic team logo fetching"
       - working: true
         agent: "main"
-        comment: "✅ FIXED: Update schedule text corrected from '12:00 и 00:00 МСК' to '09:00 и 19:00 МСК'. Added automatic team logo fetching system using LogoService. Enhanced match time parsing with proper Moscow timezone conversion. Team logos now automatically update during match refresh. Added comprehensive API endpoints for logo management."
+        comment: "✅ IMPLEMENTED: Auto-logo system works with fallback chain: API sources → placeholder generation. Logos cached for 24h. Integration with match parser complete."
+        
+  - task: "Fix match time parsing and display"
+    implemented: true
+    working: true
+    file: "services/realMatchParser.js, components/TodayMatches.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added proper time conversion functions (convertToMoscowTime, isTimeRealistic) for accurate match time handling"
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: Match times now properly converted to Moscow timezone. Header schedule text updated to '09:00 и 19:00 МСК'. Time validation added."
+        
+  - task: "Logo management API endpoints"
+    implemented: true
+    working: true
+    file: "routes/api_mongo.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added logo management endpoints: /logos/team/:teamName/:sport, /logos/update-all, /logos/all"
+      - working: true
+        agent: "main"
+        comment: "✅ TESTED: Logo API endpoints working. Auto-logo integration with match refresh. Database storage for cached logos implemented."
 
 metadata:
   created_by: "main_agent"
