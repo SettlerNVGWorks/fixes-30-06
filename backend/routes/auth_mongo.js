@@ -498,6 +498,109 @@ router.get('/telegram-auth-status/:token', async (req, res) => {
   }
 });
 
+// Get user by Telegram ID (for bot integration)
+router.get('/telegram-user/:telegramId', async (req, res) => {
+  try {
+    const { telegramId } = req.params;
+    
+    const db = getDatabase();
+    const user = await db.collection('users').findOne({
+      telegram_user_id: parseInt(telegramId)
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Пользователь не найден' });
+    }
+
+    res.json({
+      success: true,
+      id: user._id,
+      email: user.email,
+      username: user.username,
+      telegram_username: user.telegram_username,
+      auth_method: user.auth_method,
+      registration_date: user.registration_date
+    });
+  } catch (error) {
+    console.error('Get Telegram user error:', error);
+    res.status(500).json({ error: 'Ошибка при получении пользователя' });
+  }
+});
+
+// Link Telegram user to website
+router.post('/telegram-link', async (req, res) => {
+  try {
+    const { telegram_user_id, telegram_username, first_name, last_name } = req.body;
+
+    const db = getDatabase();
+    
+    // Check if user already exists
+    let user = await db.collection('users').findOne({
+      telegram_user_id: parseInt(telegram_user_id)
+    });
+
+    if (user) {
+      return res.json({
+        success: true,
+        user_id: user._id,
+        message: 'Пользователь уже существует'
+      });
+    }
+
+    // Create new user from Telegram
+    const newUser = {
+      email: null,
+      username: telegram_username || first_name || `user_${telegram_user_id}`,
+      password: null,
+      is_verified: true,
+      auth_method: 'telegram',
+      telegram_user_id: parseInt(telegram_user_id),
+      telegram_username: telegram_username,
+      first_name: first_name,
+      last_name: last_name,
+      registration_date: new Date(),
+      created_at: new Date(),
+      updated_at: new Date()
+    };
+
+    const result = await db.collection('users').insertOne(newUser);
+
+    res.json({
+      success: true,
+      user_id: result.insertedId,
+      message: 'Пользователь успешно создан'
+    });
+  } catch (error) {
+    console.error('Telegram link error:', error);
+    res.status(500).json({ error: 'Ошибка при связывании аккаунта' });
+  }
+});
+
+// Confirm Telegram auth from bot
+router.post('/telegram-confirm', async (req, res) => {
+  try {
+    const { auth_token, telegram_user_info } = req.body;
+
+    // Update auth session
+    const updated = await updateTelegramAuthSession(auth_token, {
+      status: 'confirmed',
+      telegram_user_info: telegram_user_info
+    });
+
+    if (updated) {
+      res.json({
+        success: true,
+        message: 'Авторизация подтверждена'
+      });
+    } else {
+      res.status(404).json({ error: 'Сессия не найдена' });
+    }
+  } catch (error) {
+    console.error('Telegram confirm error:', error);
+    res.status(500).json({ error: 'Ошибка подтверждения авторизации' });
+  }
+});
+
 // Get user profile (protected route)
 router.get('/profile', authMiddleware, async (req, res) => {
   try {
