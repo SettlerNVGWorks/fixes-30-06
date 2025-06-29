@@ -498,7 +498,7 @@ class SportPredictionsAPITester:
 
 def main():
     # Get the backend URL from the frontend .env file
-    backend_url = "https://021b2fc7-83c0-4541-8a98-46e6307a419a.preview.emergentagent.com"
+    backend_url = "https://8a2b505c-eeec-4fc3-810b-e961e0bd2ea8.preview.emergentagent.com"
     
     print(f"Testing API at: {backend_url}")
     
