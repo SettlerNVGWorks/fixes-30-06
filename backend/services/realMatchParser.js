@@ -555,6 +555,41 @@ class RealMatchParser {
     }
 
     return [];
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance('footballAPI');
+    
+    this.updateApiCallTime('footballAPI');
+    
+    try {
+      const response = await axios.get(
+        `${this.apis.footballAPI.url}/fixtures`,
+        {
+          params: {
+            date: today.iso,
+            status: 'NS' // Not Started matches
+          }
+        }
+      );
+
+      if (response.data && response.data.response && response.data.response.length > 0) {
+        return response.data.response.slice(0, 4).map(fixture => ({
+          sport: 'football',
+          team1: fixture.teams.home.name,
+          team2: fixture.teams.away.name,
+          match_time: fixture.fixture.date,
+          competition: fixture.league.name,
+          source: 'api-football',
+          venue: fixture.fixture.venue?.name,
+          referee: fixture.fixture.referee,
+          logo_team1: fixture.teams.home.logo || this.getTeamLogoUrl(fixture.teams.home.name, 'football'),
+          logo_team2: fixture.teams.away.logo || this.getTeamLogoUrl(fixture.teams.away.name, 'football')
+        }));
+      }
+    } catch (error) {
+      console.error('API-Football error:', error.response?.data || error.message);
+    }
+
+    return [];
   }
     const today = this.getTodayString();
     const axios = this.getAxiosInstance();
