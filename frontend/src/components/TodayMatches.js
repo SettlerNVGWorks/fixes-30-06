@@ -206,19 +206,9 @@ const TodayMatches = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h3 className="text-4xl font-bold text-white mb-4">Матчи на сегодня</h3>
-          <div className="flex items-center justify-center space-x-4 mb-4">
-            <p className="text-xl text-gray-300">
-              Экспертный анализ и коэффициенты на {totalMatches} матчей
-            </p>
-            <button
-              onClick={handleRefresh}
-              className="ml-3 bg-gold-500 hover:bg-gold-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-1"
-              disabled={loading}
-            >
-              <span>🔄</span>
-              <span>{loading ? 'Обновление...' : 'Обновить'}</span>
-            </button>
-          </div>
+          <p className="text-xl text-gray-300 mb-4">
+            Экспертный анализ и коэффициенты на {totalMatches} матчей
+          </p>
           {lastUpdated && (
             <p className="text-sm text-gray-400">
               Обновлено: {lastUpdated.toLocaleTimeString('ru-RU')}
