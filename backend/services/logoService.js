@@ -541,41 +541,31 @@ class LogoService {
       const db = getDatabase();
       
       // Get all unique teams from matches
-      const teams = await db.collection('matches').aggregate([
-        {
-          $group: {
-            _id: null,
-            teams: {
-              $addToSet: {
-                $map: {
-                  input: [
-                    { name: '$team1', sport: '$sport' },
-                    { name: '$team2', sport: '$sport' }
-                  ],
-                  as: 'team',
-                  in: '$$team'
-                }
-              }
-            }
-          }
-        }
-      ]).toArray();
+      const matches = await db.collection('matches').find({}).toArray();
+      const uniqueTeams = new Set();
       
-      if (teams.length > 0) {
-        const flatTeams = teams[0].teams.flat();
-        
-        console.log(`🔄 Updating logos for ${flatTeams.length} teams...`);
-        
-        for (const team of flatTeams) {
-          if (team.name && team.sport) {
-            await this.getTeamLogo(team.name, team.sport);
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+      // Extract teams from matches
+      for (const match of matches) {
+        if (match.team1 && match.sport) {
+          uniqueTeams.add(`${match.team1}|${match.sport}`);
         }
-        
-        console.log(`✅ Completed logo update for all teams`);
+        if (match.team2 && match.sport) {
+          uniqueTeams.add(`${match.team2}|${match.sport}`);
+        }
       }
+      
+      console.log(`🔄 Updating logos for ${uniqueTeams.size} unique teams...`);
+      
+      for (const teamKey of uniqueTeams) {
+        const [teamName, sport] = teamKey.split('|');
+        if (teamName && sport) {
+          await this.getTeamLogo(teamName, sport);
+          // Small delay to avoid rate limiting
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      console.log(`✅ Completed logo update for all teams`);
     } catch (error) {
       console.error(`❌ Error updating all team logos:`, error);
     }
