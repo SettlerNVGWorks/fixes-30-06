@@ -153,6 +153,8 @@ class Scheduler {
   // Обновление статистики
   async updateStatistics() {
     try {
+      const db = getDatabase();
+      
       // Небольшое случайное изменение статистики для реализма
       const statsChange = {
         total_predictions: Math.floor(Math.random() * 10) + 1, // +1 до +10
@@ -161,20 +163,23 @@ class Scheduler {
         monthly_wins: Math.floor(Math.random() * 5) + 1 // +1 до +5
       };
 
-      await this.matchParser.pool.query(`
-        UPDATE stats SET 
-          total_predictions = total_predictions + $1,
-          success_rate = GREATEST(75, LEAST(85, success_rate + $2)),
-          active_bettors = GREATEST(5000, active_bettors + $3),
-          monthly_wins = monthly_wins + $4,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = (SELECT id FROM stats ORDER BY id DESC LIMIT 1)
-      `, [
-        statsChange.total_predictions,
-        statsChange.success_rate_change,
-        statsChange.active_bettors_change,
-        statsChange.monthly_wins
-      ]);
+      await db.collection('stats').updateOne(
+        {},
+        {
+          $inc: {
+            total_predictions: statsChange.total_predictions,
+            active_bettors: statsChange.active_bettors_change,
+            monthly_wins: statsChange.monthly_wins
+          },
+          $set: {
+            success_rate: Math.max(75, Math.min(85, 
+              (await db.collection('stats').findOne({}))?.success_rate + statsChange.success_rate_change || 82.3
+            )),
+            updated_at: new Date()
+          }
+        },
+        { upsert: true }
+      );
 
       console.log('📈 Статистика обновлена с изменениями:', statsChange);
     } catch (error) {
