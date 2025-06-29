@@ -521,27 +521,35 @@ class RealMatchParser {
     return fallbackMatches;
   }
 
-  // Save matches to database (reuse existing method structure)
+  // Save matches to database (using MongoDB)
   async saveMatchesToDatabase(matches) {
     try {
+      const db = getDatabase();
+      
       for (const match of matches) {
-        await pool.query(`
-          INSERT INTO matches 
-          (sport, team1, team2, match_time, odds_team1, odds_team2, odds_draw, analysis, source, match_date)
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-          ON CONFLICT (id) DO NOTHING
-        `, [
-          match.sport,
-          match.team1,
-          match.team2,
-          match.match_time,
-          match.odds_team1,
-          match.odds_team2,
-          match.odds_draw,
-          match.analysis,
-          match.source,
-          match.match_date
-        ]);
+        await db.collection('matches').updateOne(
+          { 
+            team1: match.team1,
+            team2: match.team2,
+            match_time: match.match_time
+          },
+          { 
+            $set: {
+              sport: match.sport,
+              team1: match.team1,
+              team2: match.team2,
+              match_time: match.match_time,
+              odds_team1: match.odds_team1,
+              odds_team2: match.odds_team2,
+              odds_draw: match.odds_draw,
+              analysis: match.analysis,
+              source: match.source,
+              match_date: match.match_date,
+              updated_at: new Date()
+            }
+          },
+          { upsert: true }
+        );
       }
       console.log(`✅ Saved ${matches.length} real matches to database`);
     } catch (error) {
