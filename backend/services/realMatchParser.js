@@ -120,13 +120,14 @@ class RealMatchParser {
   // Get random analysis by sport
   async getRandomAnalysisBySport(sport) {
     try {
-      const result = await pool.query(
-        'SELECT analysis_text FROM match_analyses WHERE sport = $1 OR sport IS NULL ORDER BY RANDOM() LIMIT 1',
-        [sport]
-      );
+      const db = getDatabase();
+      const analyses = await db.collection('match_analyses')
+        .find({ sport: sport })
+        .toArray();
       
-      if (result.rows.length > 0) {
-        return result.rows[0].analysis_text;
+      if (analyses.length > 0) {
+        const randomIndex = Math.floor(Math.random() * analyses.length);
+        return analyses[randomIndex].analysis_text;
       }
       
       // Fallback to generic analysis
