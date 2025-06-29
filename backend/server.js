@@ -23,13 +23,8 @@ app.use(helmet());
 app.use(limiter);
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3000',
-    'https://968fc008-3b32-41d6-8af8-127569603ea2.preview.emergentagent.com',
-    // Allow ngrok URLs
-    /^https:\/\/.*\.ngrok\.io$/,
-    /^https:\/\/.*\.ngrok-free\.app$/,
-    /^https:\/\/[a-z0-9\-]+\.ngrok-free\.app$/
+    'http://127.0.0.1:3000'
   ],
   credentials: true
 }));
