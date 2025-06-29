@@ -371,6 +371,46 @@ router.get('/matches/sport/:sport', async (req, res) => {
   }
 });
 
+// Get scheduler info
+router.get('/matches/schedule-info', (req, res) => {
+  try {
+    const Scheduler = require('../services/scheduler');
+    const scheduler = new Scheduler();
+    const scheduleInfo = scheduler.getScheduleInfo();
+    
+    // Calculate time until next update
+    const now = new Date();
+    const nextUpdate = new Date();
+    nextUpdate.setHours(12, 0, 0, 0); // 12:00 today
+    
+    // If we're past 12:00, set for tomorrow
+    if (now.getHours() >= 12) {
+      nextUpdate.setDate(nextUpdate.getDate() + 1);
+    }
+    
+    const timeUntilUpdate = nextUpdate.getTime() - now.getTime();
+    const hoursUntilUpdate = Math.floor(timeUntilUpdate / (1000 * 60 * 60));
+    const minutesUntilUpdate = Math.floor((timeUntilUpdate % (1000 * 60 * 60)) / (1000 * 60));
+    
+    res.json({
+      success: true,
+      schedule: scheduleInfo,
+      nextUpdate: {
+        date: nextUpdate.toISOString(),
+        timeUntil: `${hoursUntilUpdate}ч ${minutesUntilUpdate}м`,
+        timestamp: nextUpdate.getTime()
+      },
+      message: 'Информация о расписании обновления матчей'
+    });
+  } catch (error) {
+    console.error('Schedule info error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Ошибка получения информации о расписании' 
+    });
+  }
+});
+
 // Helper function to seed sample predictions
 async function seedPredictions() {
   try {
