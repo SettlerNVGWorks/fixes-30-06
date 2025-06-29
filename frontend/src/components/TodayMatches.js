@@ -133,7 +133,7 @@ const TodayMatches = () => {
             <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-6 max-w-md mx-auto">
               <p className="text-yellow-300 mb-3">На сегодня матчей не найдено</p>
               <p className="text-xs text-gray-400">
-                Матчи обновляются автоматически в 12:00 и 00:00 МСК
+                Матчи обновляются 2 раза в день: 09:00 и 19:00 МСК (только реальные данные)
               </p>
             </div>
           </div>
