@@ -112,12 +112,9 @@ const TodayMatches = () => {
             <h3 className="text-4xl font-bold text-white mb-4">Матчи на сегодня</h3>
             <div className="bg-red-600/20 border border-red-500 rounded-lg p-4 max-w-md mx-auto">
               <p className="text-red-300">{error}</p>
-              <button
-                onClick={handleRefresh}
-                className="mt-3 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
-              >
-                Попробовать снова
-              </button>
+              <p className="text-xs text-gray-400 mt-2">
+                Матчи обновляются автоматически в 12:00 и 00:00 МСК
+              </p>
             </div>
           </div>
         </div>
