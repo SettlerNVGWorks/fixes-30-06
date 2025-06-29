@@ -2,12 +2,14 @@ const axios = require('axios');
 const UserAgent = require('user-agents');
 const { getDatabase, getSportAnalysis } = require('../database_mongo');
 const { getTeamLogo } = require('../data/teamLogos');
+const LogoService = require('./logoService');
 
 class RealMatchParser {
   constructor() {
     this.userAgent = new UserAgent();
     this.cache = new Map();
     this.cacheTimeout = 30 * 60 * 1000; // 30 minutes
+    this.logoService = new LogoService();
     
     // API Configuration
     this.apis = {
