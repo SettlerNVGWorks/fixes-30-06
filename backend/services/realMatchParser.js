@@ -873,6 +873,43 @@ class RealMatchParser {
     }
   }
 
+  // Parse from BALLDONTLIE NHL API (Alternative hockey source)
+  async parseFromBallDontLieNHL() {
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance('hockeyBall');
+    
+    this.updateApiCallTime('hockeyBall');
+    
+    try {
+      // BALLDONTLIE might have different endpoint structure
+      const response = await axios.get(
+        `${this.apis.hockeyBall.url}/games`,
+        {
+          params: {
+            date: today.iso
+          }
+        }
+      );
+
+      if (response.data && response.data.data && response.data.data.length > 0) {
+        return response.data.data.slice(0, 4).map(game => ({
+          sport: 'hockey',
+          team1: game.home_team?.full_name || game.home_team?.name || 'Home Team',
+          team2: game.visitor_team?.full_name || game.visitor_team?.name || 'Away Team',
+          match_time: game.date || today.iso + ' 20:00:00',
+          competition: 'NHL',
+          source: 'balldontlie-nhl',
+          logo_team1: this.getTeamLogoUrl(game.home_team?.full_name || game.home_team?.name, 'hockey'),
+          logo_team2: this.getTeamLogoUrl(game.visitor_team?.full_name || game.visitor_team?.name, 'hockey')
+        }));
+      }
+    } catch (error) {
+      console.error('BALLDONTLIE NHL API error:', error.response?.data || error.message);
+    }
+
+    return [];
+  }
+
   // Parse from NHL official API
   async parseFromNHLAPI() {
     const today = this.getTodayString();
