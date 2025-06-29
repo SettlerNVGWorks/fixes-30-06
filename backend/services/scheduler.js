@@ -1,10 +1,12 @@
 const cron = require('node-cron');
 const RealMatchParser = require('./realMatchParser');
+const LogoService = require('./logoService');
 const { getDatabase } = require('../database_mongo');
 
 class Scheduler {
   constructor() {
     this.matchParser = new RealMatchParser();
+    this.logoService = new LogoService();
     this.setupSchedules();
   }
 
