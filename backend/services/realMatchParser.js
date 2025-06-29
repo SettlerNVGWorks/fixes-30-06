@@ -558,10 +558,23 @@ class RealMatchParser {
     }
   }
 
-  // Clear cache
-  clearCache() {
-    this.cache.clear();
-    console.log('🧹 Match parser cache cleared');
+  // Get matches by specific sport
+  async getMatchesBySport(sport) {
+    try {
+      const allMatches = await this.getTodayMatches();
+      return allMatches.filter(match => match.sport === sport);
+    } catch (error) {
+      console.error(`Error getting ${sport} matches:`, error);
+      return [];
+    }
+  }
+  
+  // Force refresh matches
+  async forceRefreshMatches() {
+    // Clear cache to force refresh
+    this.clearCache();
+    console.log('🔄 Force refreshing matches...');
+    return await this.getTodayMatches();
   }
 }
 
