@@ -983,8 +983,8 @@ class RealMatchParser {
         match_time: `${this.getTodayString().iso} 17:00:00`,
         competition: 'NHL',
         source: 'balldontlie-nhl',
-        logo_team1: this.getTeamLogoUrl('Boston Bruins', 'hockey'),
-        logo_team2: this.getTeamLogoUrl('New York Rangers', 'hockey')
+        logo_team1: await this.getTeamLogoUrl('Boston Bruins', 'hockey'),
+        logo_team2: await this.getTeamLogoUrl('New York Rangers', 'hockey')
       }
     ];
   }
