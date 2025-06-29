@@ -288,57 +288,9 @@ class RealMatchParser {
     return sportRecommendations[match.sport] || `🎯 ПРИОРИТЕТ: Рассмотрите альтернативные рынки - исход матча непредсказуем!`;
   }
 
-  // Team logos mapping for better visual representation
-  getTeamLogo(teamName, sport) {
-    const logoMappings = {
-      // Football teams
-      'Real Madrid': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Barcelona': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Manchester City': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Liverpool': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Arsenal': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Chelsea': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Bayern Munich': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      'Borussia Dortmund': 'https://images.unsplash.com/photo-1681913297906-4ad4b553d0dd?w=100',
-      
-      // Hockey teams  
-      'ЦСКА Москва': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      'СКА Санкт-Петербург': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      'Toronto Maple Leafs': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      'Montreal Canadiens': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      'Boston Bruins': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      'New York Rangers': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100',
-      
-      // Baseball teams
-      'New York Yankees': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'Boston Red Sox': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'Cleveland Guardians': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'Los Angeles Dodgers': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'Houston Astros': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'Atlanta Braves': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      
-      // Esports teams
-      'Navi': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100',
-      'Astralis': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100',
-      'G2 Esports': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100',
-      'FaZe Clan': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100',
-      'Team Liquid': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100',
-      'Cloud9': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100'
-    };
-    
-    return logoMappings[teamName] || this.getDefaultSportLogo(sport);
-  }
-
-  // Default sport logos  
-  getDefaultSportLogo(sport) {
-    const defaultLogos = {
-      'football': 'https://images.pexels.com/photos/14547930/pexels-photo-14547930.jpeg?w=100',
-      'hockey': 'https://images.unsplash.com/photo-1639895276073-5327a3ac56fd?w=100', 
-      'baseball': 'https://images.unsplash.com/photo-1747342436838-48384e1f043e?w=100',
-      'esports': 'https://images.unsplash.com/photo-1605007239206-c468e82718fb?w=100'
-    };
-    
-    return defaultLogos[sport] || defaultLogos['football'];
+  // Team logos mapping using comprehensive database
+  getTeamLogoUrl(teamName, sport) {
+    return getTeamLogo(teamName, sport);
   }
   generateMatchId(match) {
     const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
