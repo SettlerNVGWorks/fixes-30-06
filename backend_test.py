@@ -179,42 +179,47 @@ class SportPredictionsAPITester:
                         else:
                             print(f"❌ Hockey match has incorrect source: {source}, expected one of {valid_hockey_sources}")
                             success = False
-                    elif sport == 'esports':
-                        if source == 'pandascore-api':
-                            print(f"✅ Esports match has correct source: {source}")
-                            # Check for match_id
-                            if 'match_id' in match:
-                                print(f"✅ Esports match has match_id: {match.get('match_id')}")
-                            else:
-                                print("❌ Esports match is missing match_id")
-                                success = False
-                        else:
-                            print(f"❌ Esports match has incorrect source: {source}, expected 'pandascore-api'")
-                            success = False
                     elif sport == 'football':
-                        # Football should have 0 matches (off-season)
-                        print(f"❌ Found football match during off-season: {match.get('team1')} vs {match.get('team2')}")
-                        
-                        # Check if it's one of the fake matches
-                        fake_teams = ['Real Madrid', 'Barcelona', 'Manchester City', 'Liverpool']
-                        if match.get('team1') in fake_teams and match.get('team2') in fake_teams:
-                            print(f"❌ Found fake football match: {match.get('team1')} vs {match.get('team2')}")
-                            success = False
-                        
-                        # Check if source is api-football with fake matches
-                        if source == 'api-football':
-                            print(f"❌ Football match has incorrect source: {source} (should not be using api-football with fake matches)")
-                            success = False
+                        # Football should not be present after changes
+                        print(f"❌ Found football match after it should have been removed: {match.get('team1')} vs {match.get('team2')}")
+                        success = False
+                    elif sport == 'esports':
+                        # Esports should not be present after changes
+                        print(f"❌ Found esports match after it should have been removed: {match.get('team1')} vs {match.get('team2')}")
+                        success = False
             
             print(f"\nTotal Matches: {total_matches}")
             print(f"Sports Available: {sports_available}")
             
-            # Check football matches (should be 0 in off-season)
-            football_matches = matches.get('football', [])
-            if len(football_matches) == 0:
-                print("✅ No football matches found (correct for off-season)")
+            # Check that only baseball and hockey are present
+            expected_sports = ['baseball', 'hockey']
+            unexpected_sports = [sport for sport in sports_available if sport not in expected_sports]
+            missing_sports = [sport for sport in expected_sports if sport not in sports_available]
+            
+            if not unexpected_sports and not missing_sports:
+                print("✅ Only baseball and hockey sports are present (as expected after changes)")
             else:
-                print(f"❌ Found {len(football_matches)} football matches during off-season")
+                if unexpected_sports:
+                    print(f"❌ Found unexpected sports that should have been removed: {', '.join(unexpected_sports)}")
+                    success = False
+                if missing_sports:
+                    print(f"❌ Missing expected sports: {', '.join(missing_sports)}")
+                    success = False
+            
+            # Check football matches (should be 0 after changes)
+            football_matches = matches.get('football', [])
+            if not football_matches:
+                print("✅ No football matches found (correct after changes)")
+            else:
+                print(f"❌ Found {len(football_matches)} football matches when they should have been removed")
+                success = False
+            
+            # Check esports matches (should be 0 after changes)
+            esports_matches = matches.get('esports', [])
+            if not esports_matches:
+                print("✅ No esports matches found (correct after changes)")
+            else:
+                print(f"❌ Found {len(esports_matches)} esports matches when they should have been removed")
                 success = False
             
             # Check baseball matches (should have real MLB matches)
@@ -244,19 +249,6 @@ class SportPredictionsAPITester:
             else:
                 print("⚠️ No hockey matches found")
             
-            # Check esports matches (should have real matches with match_id)
-            esports_matches = matches.get('esports', [])
-            if len(esports_matches) > 0:
-                print(f"✅ Found {len(esports_matches)} esports matches")
-                all_pandascore = all(match.get('source') == 'pandascore-api' for match in esports_matches)
-                if all_pandascore:
-                    print("✅ All esports matches are from PandaScore API")
-                else:
-                    print("❌ Some esports matches are not from PandaScore API")
-                    success = False
-            else:
-                print("⚠️ No esports matches found")
-            
             # Check for mock data
             mock_sources = []
             for sport, sport_matches in matches.items():
@@ -268,24 +260,6 @@ class SportPredictionsAPITester:
                 print("✅ No mock data found - all matches are from real sources")
             else:
                 print(f"❌ Found {len(mock_sources)} matches with mock data")
-                success = False
-            
-            # Check for specific fake matches
-            fake_matches = []
-            for sport, sport_matches in matches.items():
-                for match in sport_matches:
-                    team1 = match.get('team1', '')
-                    team2 = match.get('team2', '')
-                    if ((team1 == 'Real Madrid' and team2 == 'Barcelona') or 
-                        (team1 == 'Barcelona' and team2 == 'Real Madrid') or
-                        (team1 == 'Manchester City' and team2 == 'Liverpool') or
-                        (team1 == 'Liverpool' and team2 == 'Manchester City')):
-                        fake_matches.append(f"{team1} vs {team2}")
-            
-            if not fake_matches:
-                print("✅ No fake matches found (Real Madrid vs Barcelona, Manchester City vs Liverpool)")
-            else:
-                print(f"❌ Found fake matches: {', '.join(fake_matches)}")
                 success = False
         
         return success
