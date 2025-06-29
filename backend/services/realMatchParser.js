@@ -598,7 +598,9 @@ class RealMatchParser {
         team2: match.team2,
         match_time: `${today.iso} ${hour}:00:00`,
         competition: match.league,
-        source: 'realistic-fixture'
+        source: 'realistic-fixture',
+        logo_team1: this.getTeamLogo(match.team1, 'football'),
+        logo_team2: this.getTeamLogo(match.team2, 'football')
       };
     });
   }
