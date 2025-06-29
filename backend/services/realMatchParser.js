@@ -556,7 +556,6 @@ class RealMatchParser {
 
     return [];
   }
-  }
 
   // Generate realistic football matches based on current leagues
   generateRealisticFootballMatches() {
