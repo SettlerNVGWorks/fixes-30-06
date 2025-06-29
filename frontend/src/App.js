@@ -246,25 +246,11 @@ function App() {
       description: 'Профессиональные прогнозы на MLB и международные турниры'
     },
     {
-      name: 'Футбол',
-      icon: '🏈',
-      image: 'https://images.unsplash.com/photo-1610729866389-fbf90649c302',
-      stats: { predictions: 428, accuracy: 76.3 },
-      description: 'Детальный анализ NFL и студенческого футбола'
-    },
-    {
       name: 'Хоккей',
       icon: '🏒',
       image: 'https://images.unsplash.com/photo-1576584520374-c55375496eac',
       stats: { predictions: 285, accuracy: 79.8 },
       description: 'Экспертные прогнозы на NHL и международные чемпионаты'
-    },
-    {
-      name: 'Киберспорт',
-      icon: '🎮',
-      image: 'https://www.oradesibiu.ro/wp-content/uploads/2021/10/E-Sports.jpg',
-      stats: { predictions: 222, accuracy: 74.9 },
-      description: 'Аналитика топовых турниров CS:GO, Dota 2, LoL'
     }
   ];
 
@@ -331,12 +317,6 @@ function App() {
             </div>
           </button>
         </div>
-
-
-
-
-
-
           </div>
         </div>
       </header>
@@ -361,7 +341,7 @@ function App() {
                 <span className="text-blue-400"> №1</span>
               </div>
               <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl mx-auto">
-                Лучшие аналитики мира предоставляют экспертные прогнозы на бейсбол, футбол, хоккей и киберспорт.
+                Лучшие аналитики мира предоставляют экспертные прогнозы на бейсбол и хоккей.
                 <br />
                 <span className="text-gold-400 font-semibold">Стабильный профит с доказанной статистикой успешности.</span>
               </p>
@@ -407,10 +387,10 @@ function App() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h3 className="text-4xl font-bold text-white mb-4">Наши специализации</h3>
-            <p className="text-xl text-gray-300">Экспертная аналитика по всем популярным видам спорта</p>
+            <p className="text-xl text-gray-300">Экспертная аналитика по бейсболу и хоккею</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {sports.map((sport, index) => (
               <div key={index} className="bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-gold-500/20 hover:border-gold-500/50 transition-all duration-300 transform hover:scale-105">
                 <div className="h-48 overflow-hidden relative">
