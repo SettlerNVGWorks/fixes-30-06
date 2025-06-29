@@ -161,6 +161,27 @@ class RealMatchParser {
     });
   }
 
+  // Get random analysis by sport
+  async getRandomAnalysisBySport(sport) {
+    try {
+      const db = getDatabase();
+      const analyses = await db.collection('match_analyses')
+        .find({ sport: sport })
+        .toArray();
+      
+      if (analyses.length > 0) {
+        const randomIndex = Math.floor(Math.random() * analyses.length);
+        return analyses[randomIndex].analysis_text;
+      }
+      
+      // Fallback to generic analysis
+      return this.getGenericAnalysis(sport);
+    } catch (error) {
+      console.error('Error getting sport-specific analysis:', error);
+      return this.getGenericAnalysis(sport);
+    }
+  }
+
   // Generate unique match ID
   generateMatchId(match) {
     const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
