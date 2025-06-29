@@ -368,20 +368,9 @@ class RealMatchParser {
     try {
       let allMatches = [];
       
-      // Try primary Football-Data API first
-      if (this.canMakeApiCall('football') && this.apis.football.key) {
-        try {
-          allMatches = await this.parseFromFootballDataAPI();
-          if (allMatches.length >= 2) {
-            console.log(`✅ Got ${allMatches.length} football matches from Football-Data API`);
-            this.setCacheData(cacheKey, allMatches);
-            return allMatches;
-          }
-        } catch (error) {
-          console.log('⚠️ Football-Data API failed, trying alternatives...');
-        }
-      }
-
+      // For testing purposes, skip Football-Data API and try API-Football first
+      console.log('⚠️ Skipping Football-Data API for testing, trying API-Football...');
+      
       // Try new API-Football as priority alternative
       if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key) {
         try {
