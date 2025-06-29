@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../database');
+const { getDatabase } = require('../database_mongo');
 const RealMatchParser = require('../services/realMatchParser');
 
 const router = express.Router();
