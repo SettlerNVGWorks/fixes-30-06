@@ -158,19 +158,15 @@ const TodayMatches = () => {
             <p className="text-xl text-gray-300">
               Экспертный анализ и коэффициенты на {totalMatches} матчей
             </p>
-            <button
-              onClick={handleRefresh}
-              className="bg-gold-500 hover:bg-gold-600 text-white px-3 py-1 rounded-lg text-sm transition"
-              title="Обновить матчи"
-            >
-              🔄
-            </button>
           </div>
           {lastUpdated && (
             <p className="text-sm text-gray-400">
               Обновлено: {lastUpdated.toLocaleTimeString('ru-RU')}
             </p>
           )}
+          <p className="text-xs text-gray-500 mt-2">
+            Матчи обновляются автоматически в 12:00 и 00:00 МСК
+          </p>
         </div>
 
         {/* Sports sections */}
