@@ -303,6 +303,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ RETESTED: Logo service is working correctly for all sports (football, baseball, hockey, esports). The service properly fetches logos from multiple sources and falls back to placeholder generation when needed. All team logos are being properly returned in the /api/matches/today endpoint."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE TESTING: Logo service fallback chain is working correctly for all sports. Known teams (Real Madrid, New York Yankees, Toronto Maple Leafs, Natus Vincere) return proper logos from the direct logo URLs. Unknown teams (Nonexistent FC, Imaginary Bears, Fantasy Knights, Virtual Gamers) properly use the fallback chain and generate placeholder logos when needed. The service correctly integrates with the matches API, ensuring all matches have team logos. All tests passed with no issues."
         
   - task: "Logo Management APIs"
     implemented: true
