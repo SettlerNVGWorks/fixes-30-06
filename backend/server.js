@@ -4,7 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
-const { initDatabase } = require('./database');
+const { initEnhancedDatabase } = require('./database_enhanced');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
 const Scheduler = require('./services/scheduler');
