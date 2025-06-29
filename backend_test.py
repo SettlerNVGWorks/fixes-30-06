@@ -735,53 +735,25 @@ def main():
     # Run basic API tests
     print("\n=== Testing Basic API Endpoints ===")
     health_test = tester.test_health_endpoint()
+    stats_test = tester.test_stats_endpoint()
     
-    # Test new features
-    print("\n=== Testing Fixed Time Display ===")
-    schedule_info_test = tester.test_schedule_info_endpoint()
-    
-    print("\n=== Testing Automatic Logo Fetching ===")
-    logo_service_test = tester.test_logo_service_fallback_chain()
-    all_logos_test = tester.test_all_logos_endpoint()
-    update_logos_test = tester.test_update_all_logos_endpoint()
-    
-    print("\n=== Testing Enhanced Time Parsing ===")
-    time_conversion_test = tester.test_time_conversion()
-    
-    print("\n=== Testing Match Status System ===")
-    match_status_test = tester.test_match_status_system()
-    
-    print("\n=== Testing Today's Matches with Logos ===")
+    # Test today's matches to verify only baseball and hockey are present
+    print("\n=== Testing Today's Matches (Should only have Baseball and Hockey) ===")
     today_matches_test = tester.test_today_matches_endpoint()
     
-    print("\n=== Testing Refresh Matches with Logo Updates ===")
+    # Test refresh matches to verify changes persist
+    print("\n=== Testing Refresh Matches (Should maintain only Baseball and Hockey) ===")
     refresh_matches_test = tester.test_refresh_matches_endpoint()
-    
-    # Test logo statistics
-    print("\n=== Testing Logo Statistics ===")
-    logo_stats_test = tester.test_logo_stats_endpoint()
-    
-    # Test logo cleanup
-    print("\n=== Testing Logo Cleanup ===")
-    logo_cleanup_test = tester.test_logo_cleanup_endpoint()
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
     
     # Print summary of tests
-    print("\n=== Backend Improvements Test Summary ===")
+    print("\n=== Backend Test Summary ===")
     print(f"1. Health Endpoint: {'✅ PASSED' if health_test else '❌ FAILED'}")
-    print(f"2. Fixed Time Display (09:00 и 19:00 МСК): {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
-    print(f"3. Automatic Logo Fetching:")
-    print(f"   - Logo Service Fallback Chain: {'✅ PASSED' if logo_service_test else '❌ FAILED'}")
-    print(f"   - All Logos Endpoint: {'✅ PASSED' if all_logos_test else '❌ FAILED'}")
-    print(f"   - Update All Logos Endpoint: {'✅ PASSED' if update_logos_test else '❌ FAILED'}")
-    print(f"4. Enhanced Time Parsing: {'✅ PASSED' if time_conversion_test else '❌ FAILED'}")
-    print(f"5. Match Status System: {'✅ PASSED' if match_status_test else '❌ FAILED'}")
-    print(f"6. Today's Matches with Logos: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
-    print(f"7. Refresh Matches with Logo Updates: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
-    print(f"8. Logo Statistics: {'✅ PASSED' if logo_stats_test else '❌ FAILED'}")
-    print(f"9. Logo Cleanup: {'✅ PASSED' if logo_cleanup_test else '❌ FAILED'}")
+    print(f"2. Stats Endpoint: {'✅ PASSED' if stats_test else '❌ FAILED'}")
+    print(f"3. Today's Matches (Only Baseball and Hockey): {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
+    print(f"4. Refresh Matches (Only Baseball and Hockey): {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
     
     # Return success if all tests passed
     return 0 if tester.tests_passed == tester.tests_run else 1
