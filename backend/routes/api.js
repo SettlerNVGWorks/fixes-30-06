@@ -351,10 +351,10 @@ router.get('/matches/sport/:sport', async (req, res) => {
       matches: matches
     });
   } catch (error) {
-    console.error(`Sport ${sport} matches error:`, error);
+    console.error(`Sport matches error:`, error);
     res.status(500).json({ 
       success: false,
-      error: `Ошибка получения матчей по ${sport}` 
+      error: 'Ошибка получения матчей по спорту'
     });
   }
 });
