@@ -152,6 +152,14 @@ const TodayMatches = () => {
             <p className="text-xl text-gray-300">
               Экспертный анализ и коэффициенты на {totalMatches} матчей
             </p>
+            <button
+              onClick={handleRefresh}
+              className="ml-3 bg-gold-500 hover:bg-gold-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center space-x-1"
+              disabled={loading}
+            >
+              <span>🔄</span>
+              <span>{loading ? 'Обновление...' : 'Обновить'}</span>
+            </button>
           </div>
           {lastUpdated && (
             <p className="text-sm text-gray-400">
