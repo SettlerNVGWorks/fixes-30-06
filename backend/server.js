@@ -72,7 +72,7 @@ app.use('*', (req, res) => {
 // Initialize database and start server
 const startServer = async () => {
   try {
-    await initDatabase();
+    await initEnhancedDatabase();
     
     // Initialize scheduler for daily match updates
     scheduler = new Scheduler();
