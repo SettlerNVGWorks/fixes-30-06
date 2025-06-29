@@ -595,8 +595,8 @@ class RealMatchParser {
         match_time: `${this.getTodayString().iso} 20:30:00`,
         competition: 'Bundesliga',
         source: 'free-football-api',
-        logo_team1: this.getTeamLogoUrl('Bayern Munich', 'football'),
-        logo_team2: this.getTeamLogoUrl('Borussia Dortmund', 'football')
+        logo_team1: await this.getTeamLogoUrl('Bayern Munich', 'football'),
+        logo_team2: await this.getTeamLogoUrl('Borussia Dortmund', 'football')
       },
       {
         sport: 'football',
@@ -605,8 +605,8 @@ class RealMatchParser {
         match_time: `${this.getTodayString().iso} 18:00:00`,
         competition: 'Serie A',
         source: 'free-football-api',
-        logo_team1: this.getTeamLogoUrl('Inter Milan', 'football'),
-        logo_team2: this.getTeamLogoUrl('AC Milan', 'football')
+        logo_team1: await this.getTeamLogoUrl('Inter Milan', 'football'),
+        logo_team2: await this.getTeamLogoUrl('AC Milan', 'football')
       }
     ];
   }
