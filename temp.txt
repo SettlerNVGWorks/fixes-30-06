@@ -1,0 +1,30 @@
+  const sports = [
+    {
+      name: 'Бейсбол',
+      icon: '⚾',
+      image: 'https://images.unsplash.com/photo-1471295253337-3ceaaedca402',
+      stats: { predictions: 312, accuracy: 82.1 },
+      description: 'Профессиональные прогнозы на MLB и международные турниры'
+    },
+    {
+      name: 'Футбол',
+      icon: '🏈',
+      image: 'https://images.unsplash.com/photo-1610729866389-fbf90649c302',
+      stats: { predictions: 428, accuracy: 76.3 },
+      description: 'Детальный анализ NFL и студенческого футбола'
+    },
+    {
+      name: 'Хоккей',
+      icon: '🏒',
+      image: 'https://images.unsplash.com/photo-1576584520374-c55375496eac',
+      stats: { predictions: 285, accuracy: 79.8 },
+      description: 'Экспертные прогнозы на NHL и международные чемпионаты'
+    },
+    {
+      name: 'Киберспорт',
+      icon: '🎮',
+      image: 'https://www.oradesibriu.ro/wp-content/uploads/2021/10/E-Sports.jpg',
+      stats: { predictions: 222, accuracy: 74.9 },
+      description: 'Аналитика топовых турниров CS:GO, Dota 2, LoL'
+    }
+  ];
