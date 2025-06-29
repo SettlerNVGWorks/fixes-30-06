@@ -115,6 +115,9 @@ user_problem_statement: |
   2. Make an info button that blinks on the registration window near telegram tag field to explain what a telegram tag is and where to get it
   3. Change login to use telegram tag and password instead of username and password, and specify this during registration that they should enter a valid telegram tag
 
+  CURRENT TASK:
+  4. Check and improve match parsing system - the user wants to parse current matches from other websites and update them at 12:00 PM, parsing matches for each sport individually
+
 backend:
   - task: "Node.js server setup with Express"
     implemented: true
