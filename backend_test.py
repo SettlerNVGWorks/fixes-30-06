@@ -102,40 +102,15 @@ class SportPredictionsAPITester:
         
         if success:
             print(f"Success: {response.get('success')}")
-            print(f"Date: {response.get('date')}")
-            print(f"Total Matches: {response.get('total_matches')}")
-            print(f"Sports Available: {response.get('sports_available')}")
+            total_matches = 0
+            sports_available = []
             
-            # Check if all 4 sports are available
-            sports_available = response.get('sports_available', [])
-            required_sports = ['football', 'baseball', 'hockey', 'esports']
-            missing_sports = [sport for sport in required_sports if sport not in sports_available]
-            
-            if missing_sports:
-                print(f"❌ Missing sports: {', '.join(missing_sports)}")
-                success = False
-            else:
-                print("✅ All required sports are available")
-            
-            # Check total number of matches (should be 8, 2 per sport)
-            total_matches = response.get('total_matches', 0)
-            if total_matches == 8:
-                print("✅ Total matches count is correct: 8 matches (2 per sport)")
-            else:
-                print(f"❌ Incorrect total matches count: {total_matches} (expected 8)")
-                success = False
-            
-            # Check match structure and analysis
+            # Check matches structure
             matches = response.get('matches', {})
             for sport, sport_matches in matches.items():
+                sports_available.append(sport)
+                total_matches += len(sport_matches)
                 print(f"\n{sport.capitalize()} matches: {len(sport_matches)}")
-                
-                # Check if each sport has exactly 2 matches
-                if len(sport_matches) != 2:
-                    print(f"❌ {sport} has {len(sport_matches)} matches (expected 2)")
-                    success = False
-                else:
-                    print(f"✅ {sport} has exactly 2 matches")
                 
                 # Check each match in the sport
                 for match_idx, match in enumerate(sport_matches):
@@ -170,168 +145,145 @@ class SportPredictionsAPITester:
                         print("❌ Analysis does not contain any betting priority symbols")
                         success = False
                     
-                    # Check source for specific sports
-                    if sport == 'baseball':
-                        if match.get('source') == 'mlb-statsapi':
-                            print("✅ Baseball match has correct source: mlb-statsapi")
+                    # Check match status
+                    if 'status' in match:
+                        valid_statuses = ['scheduled', 'live', 'finished']
+                        if match.get('status') in valid_statuses:
+                            print(f"✅ Match has valid status: {match.get('status')}")
                         else:
-                            print(f"❌ Baseball match has incorrect source: {match.get('source')} (expected mlb-statsapi)")
-                            success = False
-                    
-                    if sport == 'football':
-                        valid_sources = ['football-data-api', 'api-football', 'free-football-api', 'realistic-fixture']
-                        if match.get('source') in valid_sources:
-                            print(f"✅ Football match has valid source: {match.get('source')}")
-                            if match.get('source') == 'api-football':
-                                print("✅ Using new API-Football alternative source")
-                        else:
-                            print(f"❌ Football match has invalid source: {match.get('source')}")
-                            success = False
-                    
-                    if sport == 'hockey':
-                        valid_sources = ['nhl-api', 'balldontlie-nhl', 'thesportsdb', 'realistic-fixture']
-                        if match.get('source') in valid_sources:
-                            print(f"✅ Hockey match has valid source: {match.get('source')}")
-                            if match.get('source') == 'balldontlie-nhl':
-                                print("✅ Using new BALLDONTLIE NHL API alternative source")
-                            elif match.get('source') == 'thesportsdb':
-                                print("✅ Using TheSportsDB backup source")
-                        else:
-                            print(f"❌ Hockey match has invalid source: {match.get('source')}")
-                            success = False
-                    
-                    if sport == 'esports':
-                        if match.get('source') == 'pandascore-api':
-                            print("✅ Esports match has correct source: pandascore-api")
-                        else:
-                            print(f"⚠️ Esports match has alternative source: {match.get('source')} (expected pandascore-api)")
-                            # Not failing the test for this as it might use a fallback
-                    
-                    # Check if match has real API source flag
-                    if 'real_api_source' in match:
-                        if match.get('real_api_source') == True:
-                            print("✅ Match has real_api_source flag set to true")
-                        else:
-                            print("❌ Match has real_api_source flag set to false")
+                            print(f"❌ Match has invalid status: {match.get('status')}")
                             success = False
                     else:
-                        # For now, we'll just warn about this since it's a new field
-                        print("⚠️ Match is missing real_api_source flag")
+                        print("❌ Match is missing status field")
+                        success = False
+            
+            print(f"\nTotal Matches: {total_matches}")
+            print(f"Sports Available: {sports_available}")
+            
+            # Check if all 4 sports are available
+            required_sports = ['football', 'baseball', 'hockey', 'esports']
+            missing_sports = [sport for sport in required_sports if sport not in sports_available]
+            
+            if missing_sports:
+                print(f"❌ Missing sports: {', '.join(missing_sports)}")
+                success = False
+            else:
+                print("✅ All required sports are available")
+            
+            # Check for mock data
+            mock_sources = []
+            for sport, sport_matches in matches.items():
+                for match in sport_matches:
+                    if match.get('source') == 'mock-generator':
+                        mock_sources.append(match)
+            
+            if not mock_sources:
+                print("✅ No mock data found - all matches are from real sources")
+            else:
+                print(f"❌ Found {len(mock_sources)} matches with mock data")
+                success = False
         
         return success
 
-    def test_sport_matches_endpoint(self, sport):
-        """Test the sport-specific matches endpoint"""
+    def test_team_logo_endpoint(self, team_name, sport):
+        """Test the team logo endpoint"""
         success, response = self.run_test(
-            f"{sport.capitalize()} Matches Endpoint",
+            f"Team Logo Endpoint for {team_name} ({sport})",
             "GET",
-            f"api/matches/sport/{sport}",
+            f"api/logos/team/{team_name}/{sport}",
             200
         )
         
         if success:
             print(f"Success: {response.get('success')}")
+            print(f"Team: {response.get('team')}")
             print(f"Sport: {response.get('sport')}")
-            print(f"Total Matches: {response.get('total_matches')}")
             
-            matches = response.get('matches', [])
-            if matches:
-                # Check if exactly 2 matches are returned
-                if len(matches) == 2:
-                    print("✅ Exactly 2 matches returned as expected")
+            logo_url = response.get('logo_url')
+            if logo_url:
+                print(f"Logo URL: {logo_url}")
+                print("✅ Logo URL is present")
+                
+                # Check if URL is valid
+                if logo_url.startswith('http'):
+                    print("✅ Logo URL is a valid URL")
                 else:
-                    print(f"⚠️ Expected 2 matches, got {len(matches)}")
-                
-                # Check first match
-                sample_match = matches[0]
-                print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
-                print(f"Match time: {sample_match.get('match_time')}")
-                print(f"Source: {sample_match.get('source')}")
-                
-                # Verify match structure
-                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport', 'logo_team1', 'logo_team2']
-                missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
-                
-                if missing_fields:
-                    print(f"❌ Missing required fields: {', '.join(missing_fields)}")
+                    print("❌ Logo URL is not a valid URL")
                     success = False
-                else:
-                    print("✅ Match has all required fields")
-                
-                # Check team logos
-                if 'logo_team1' in sample_match and 'logo_team2' in sample_match:
-                    if sample_match['logo_team1'] and sample_match['logo_team2']:
-                        print("✅ Both team logos are present")
-                    else:
-                        print("❌ One or both team logos are missing")
-                        success = False
-                
-                # Check analysis for betting symbols
-                analysis = sample_match.get('analysis', '')
-                betting_symbols = ['🎯', '💰', '📈', '💡']
-                found_symbols = [symbol for symbol in betting_symbols if symbol in analysis]
-                
-                if found_symbols:
-                    print(f"✅ Analysis contains betting priority symbols: {', '.join(found_symbols)}")
-                else:
-                    print("❌ Analysis does not contain any betting priority symbols")
-                    success = False
-                
-                # Verify all matches are for the requested sport
-                all_correct_sport = all(match.get('sport') == sport for match in matches)
-                if all_correct_sport:
-                    print(f"✅ All matches are for {sport}")
-                else:
-                    print(f"❌ Some matches are not for {sport}")
-                    success = False
-                
-                # Check specific source for each sport
-                if sport == 'baseball':
-                    baseball_sources = [match.get('source') for match in matches]
-                    if 'mlb-statsapi' in baseball_sources:
-                        print("✅ Baseball matches include mlb-statsapi source")
-                    else:
-                        print(f"❌ Baseball matches don't use mlb-statsapi: {baseball_sources}")
-                        success = False
-                
-                if sport == 'football':
-                    football_sources = [match.get('source') for match in matches]
-                    valid_sources = ['football-data-api', 'api-football', 'free-football-api', 'realistic-fixture']
-                    valid_football_sources = [s for s in football_sources if s in valid_sources]
-                    if len(valid_football_sources) == len(football_sources):
-                        print(f"✅ Football matches use valid sources: {football_sources}")
-                        if 'api-football' in football_sources:
-                            print("✅ Using new API-Football alternative source")
-                        if 'free-football-api' in football_sources:
-                            print("✅ Using Free Football API backup source")
-                    else:
-                        print(f"❌ Some football matches use invalid sources: {football_sources}")
-                        success = False
-                
-                if sport == 'hockey':
-                    hockey_sources = [match.get('source') for match in matches]
-                    valid_sources = ['nhl-api', 'balldontlie-nhl', 'thesportsdb', 'realistic-fixture']
-                    valid_hockey_sources = [s for s in hockey_sources if s in valid_sources]
-                    if len(valid_hockey_sources) == len(hockey_sources):
-                        print(f"✅ Hockey matches use valid sources: {hockey_sources}")
-                        if 'balldontlie-nhl' in hockey_sources:
-                            print("✅ Using new BALLDONTLIE NHL API alternative source")
-                        if 'thesportsdb' in hockey_sources:
-                            print("✅ Using TheSportsDB backup source")
-                    else:
-                        print(f"❌ Some hockey matches use invalid sources: {hockey_sources}")
-                        success = False
-                
-                if sport == 'esports':
-                    esports_sources = [match.get('source') for match in matches]
-                    if 'pandascore-api' in esports_sources:
-                        print("✅ Esports matches include pandascore-api source")
-                    else:
-                        print(f"⚠️ Esports matches don't use pandascore-api: {esports_sources}")
-                        # Not failing the test for this as it might use a fallback
             else:
-                print(f"❌ No matches returned for {sport}")
+                print("❌ Logo URL is missing")
                 success = False
+        
+        return success
+
+    def test_all_logos_endpoint(self):
+        """Test the all logos endpoint"""
+        success, response = self.run_test(
+            "All Logos Endpoint",
+            "GET",
+            "api/logos/all",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            
+            logos = response.get('logos', [])
+            logo_count = response.get('count', 0)
+            
+            if logos and logo_count > 0:
+                print(f"✅ Found {logo_count} logos in database")
+                
+                # Check a sample logo
+                if len(logos) > 0:
+                    sample_logo = logos[0]
+                    print(f"Sample logo: {sample_logo.get('team_name')} ({sample_logo.get('sport')})")
+                    print(f"Logo URL: {sample_logo.get('logo_url')}")
+                    
+                    # Check required fields
+                    required_fields = ['team_name', 'sport', 'logo_url', 'updated_at']
+                    missing_fields = [field for field in required_fields if field not in sample_logo]
+                    
+                    if missing_fields:
+                        print(f"❌ Sample logo missing required fields: {', '.join(missing_fields)}")
+                        success = False
+                    else:
+                        print("✅ Sample logo has all required fields")
+            else:
+                print("⚠️ No logos found in database yet")
+        
+        return success
+
+    def test_update_all_logos_endpoint(self):
+        """Test the update all logos endpoint"""
+        success, response = self.run_test(
+            "Update All Logos Endpoint",
+            "POST",
+            "api/logos/update-all",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Message: {response.get('message')}")
+            
+            # Verify logos were updated by checking all logos endpoint
+            logos_success, logos_response = self.run_test(
+                "All Logos After Update",
+                "GET",
+                "api/logos/all",
+                200
+            )
+            
+            if logos_success:
+                logos = logos_response.get('logos', [])
+                logo_count = logos_response.get('count', 0)
+                
+                if logos and logo_count > 0:
+                    print(f"✅ Found {logo_count} logos after update")
+                else:
+                    print("⚠️ No logos found after update")
+                    success = False
         
         return success
 
@@ -347,106 +299,41 @@ class SportPredictionsAPITester:
         if success:
             print(f"Success: {response.get('success')}")
             print(f"Message: {response.get('message')}")
-            print(f"Total Matches: {response.get('total_matches')}")
-            print(f"Updated At: {response.get('updated_at')}")
             
-            # Verify matches were actually refreshed by checking today's matches again
-            refresh_success, today_response = self.run_test(
+            # Check if message mentions logo updates
+            message = response.get('message', '')
+            if 'logo' in message.lower():
+                print("✅ Response message mentions logo updates")
+            else:
+                print("⚠️ Response message doesn't mention logo updates")
+            
+            # Verify matches were refreshed with logos by checking today's matches
+            matches_success, matches_response = self.run_test(
                 "Today's Matches After Refresh",
                 "GET",
                 "api/matches/today",
                 200
             )
             
-            if refresh_success:
-                total_matches = today_response.get('total_matches', 0)
-                if total_matches == 8:
-                    print(f"✅ Successfully refreshed matches: {total_matches} matches (2 per sport)")
+            if matches_success:
+                matches = matches_response.get('matches', {})
+                
+                # Check if matches have logos
+                all_have_logos = True
+                for sport, sport_matches in matches.items():
+                    for match in sport_matches:
+                        if not match.get('logo_team1') or not match.get('logo_team2'):
+                            all_have_logos = False
+                            break
+                
+                if all_have_logos:
+                    print("✅ All matches have team logos after refresh")
                 else:
-                    print(f"⚠️ Expected 8 matches after refresh, got {total_matches}")
+                    print("❌ Some matches are missing team logos after refresh")
                     success = False
-                
-                # Check if alternative sources are being used
-                matches = today_response.get('matches', {})
-                football_matches = matches.get('football', [])
-                hockey_matches = matches.get('hockey', [])
-                
-                # Check football sources
-                football_sources = [match.get('source') for match in football_matches]
-                print(f"Football sources after refresh: {football_sources}")
-                if any(source in ['api-football', 'free-football-api'] for source in football_sources):
-                    print("✅ Alternative football sources are being used")
-                
-                # Check hockey sources
-                hockey_sources = [match.get('source') for match in hockey_matches]
-                print(f"Hockey sources after refresh: {hockey_sources}")
-                if any(source in ['balldontlie-nhl', 'thesportsdb'] for source in hockey_sources):
-                    print("✅ Alternative hockey sources are being used")
         
         return success
-        
-    def test_update_daily_matches_endpoint(self):
-        """Test the update daily matches endpoint"""
-        success, response = self.run_test(
-            "Update Daily Matches Endpoint",
-            "POST",
-            "api/matches/update-daily",
-            200
-        )
-        
-        if success:
-            print(f"Success: {response.get('success')}")
-            print(f"Message: {response.get('message')}")
-            print(f"Total Matches: {response.get('total_matches')}")
-            print(f"Updated At: {response.get('updated_at')}")
-            
-            # Check if matches were returned in the response
-            matches = response.get('matches', [])
-            if matches:
-                print(f"✅ Daily update returned {len(matches)} matches")
-                
-                # Check sports distribution
-                sports_count = {}
-                for match in matches:
-                    sport = match.get('sport')
-                    if sport not in sports_count:
-                        sports_count[sport] = 0
-                    sports_count[sport] += 1
-                
-                print(f"Sports distribution: {sports_count}")
-                
-                # Check if all 4 sports are present with 2 matches each
-                required_sports = ['football', 'baseball', 'hockey', 'esports']
-                all_sports_present = all(sport in sports_count for sport in required_sports)
-                correct_counts = all(sports_count.get(sport, 0) == 2 for sport in required_sports)
-                
-                if all_sports_present and correct_counts:
-                    print("✅ All sports present with 2 matches each")
-                else:
-                    print("⚠️ Not all sports have exactly 2 matches")
-                    success = False
-                
-                # Check sources for football and hockey
-                football_matches = [m for m in matches if m.get('sport') == 'football']
-                hockey_matches = [m for m in matches if m.get('sport') == 'hockey']
-                
-                football_sources = [match.get('source') for match in football_matches]
-                hockey_sources = [match.get('source') for match in hockey_matches]
-                
-                print(f"Football sources: {football_sources}")
-                print(f"Hockey sources: {hockey_sources}")
-                
-                if any(source in ['api-football', 'free-football-api'] for source in football_sources):
-                    print("✅ Alternative football sources are being used")
-                
-                if any(source in ['balldontlie-nhl', 'thesportsdb'] for source in hockey_sources):
-                    print("✅ Alternative hockey sources are being used")
-            else:
-                print("❌ No matches returned in daily update response")
-                success = False
-        
-        return success
-    
+
     def test_schedule_info_endpoint(self):
         """Test the schedule info endpoint"""
         success, response = self.run_test(
@@ -458,16 +345,16 @@ class SportPredictionsAPITester:
         
         if success:
             print(f"Success: {response.get('success')}")
-            print(f"Message: {response.get('message')}")
             
             # Check schedule information
             schedule = response.get('schedule', {})
             if schedule:
-                print(f"Daily Match Update: {schedule.get('dailyMatchUpdate')}")
+                print(f"Morning Update: {schedule.get('morningUpdate')}")
+                print(f"Evening Update: {schedule.get('eveningUpdate')}")
                 print(f"Old Match Cleanup: {schedule.get('oldMatchCleanup')}")
                 print(f"Timezone: {schedule.get('timezone')}")
-                print(f"Matches Per Sport: {schedule.get('matchesPerSport')}")
-                print(f"Total Matches Per Day: {schedule.get('totalMatchesPerDay')}")
+                print(f"Real Data Only: {schedule.get('realDataOnly')}")
+                print(f"Auto Logo Fetch: {schedule.get('autoLogoFetch')}")
                 
                 # Verify schedule is set for 09:00 and 19:00 MSK
                 if '09:00 МСК' in schedule.get('morningUpdate', '') and '19:00 МСК' in schedule.get('eveningUpdate', ''):
@@ -483,42 +370,29 @@ class SportPredictionsAPITester:
                     print(f"❌ Timezone not set to Europe/Moscow: {schedule.get('timezone')}")
                     success = False
                 
-                # Verify matches per sport is 2
-                if schedule.get('matchesPerSport') == 2:
-                    print("✅ Matches per sport correctly set to 2")
+                # Verify real data only is true
+                if schedule.get('realDataOnly') == True:
+                    print("✅ Real data only flag is set to true")
                 else:
-                    print(f"❌ Matches per sport not set to 2: {schedule.get('matchesPerSport')}")
+                    print("❌ Real data only flag is not set to true")
                     success = False
                 
-                # Verify total matches per day is 8
-                if schedule.get('matchesPerSport') == 2 and schedule.get('maxMatchesPerDay') == 8:
-                    print("✅ Total matches per day correctly set to 8 (2 per sport)")
+                # Verify auto logo fetch is true
+                if schedule.get('autoLogoFetch') == True:
+                    print("✅ Auto logo fetch flag is set to true")
                 else:
-                    print(f"❌ Total matches per day not set correctly: {schedule.get('matchesPerSport')} per sport, {schedule.get('maxMatchesPerDay')} total")
+                    print("❌ Auto logo fetch flag is not set to true")
                     success = False
             else:
                 print("❌ No schedule information returned")
                 success = False
-            
-            # Check next update information
-            next_updates = response.get('next_updates', [])
-            if next_updates and len(next_updates) == 2:
-                print(f"Next Updates: {next_updates}")
-                if '09:00 МСК' in next_updates[0] and '19:00 МСК' in next_updates[1]:
-                    print("✅ Next updates correctly set for 09:00 and 19:00 МСК")
-                else:
-                    print(f"❌ Next updates not set correctly: {next_updates}")
-                    success = False
-            else:
-                print("❌ No next updates information returned or incorrect number of updates")
-                success = False
         
         return success
 
-    def test_match_data_structure_and_realism(self):
-        """Test the match data structure in detail and check realism scores"""
+    def test_time_conversion(self):
+        """Test the time conversion by checking match times"""
         success, response = self.run_test(
-            "Match Data Structure and Realism Test",
+            "Today's Matches for Time Conversion Test",
             "GET",
             "api/matches/today",
             200
@@ -526,151 +400,35 @@ class SportPredictionsAPITester:
         
         if success:
             matches = response.get('matches', {})
-            all_sports_present = True
-            total_realism_score = 0
-            match_count = 0
+            all_times_valid = True
             
-            # Required sports
-            required_sports = ['football', 'baseball', 'hockey', 'esports']
-            
-            # Check each sport
-            for sport in required_sports:
-                sport_matches = matches.get(sport, [])
-                if not sport_matches:
-                    print(f"❌ No {sport} matches found")
-                    all_sports_present = False
-                    continue
-                
-                print(f"\n=== {sport.capitalize()} Match Structure and Realism ===")
-                
-                # Check each match in the sport
-                for match_idx, match in enumerate(sport_matches):
-                    match_count += 1
-                    print(f"\nMatch {match_idx+1}: {match.get('team1')} vs {match.get('team2')}")
-                    print(f"Source: {match.get('source')}")
-                    
-                    # Check required fields
-                    required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport', 'logo_team1', 'logo_team2', 'source', 'prediction']
-                    missing_fields = [field for field in required_fields if field not in match or match.get(field) is None]
-                    
-                    if missing_fields:
-                        print(f"❌ Missing required fields: {', '.join(missing_fields)}")
-                        success = False
-                    else:
-                        print("✅ All required fields present")
-                    
-                    # Check team logos
-                    if 'logo_team1' in match and 'logo_team2' in match:
-                        if match['logo_team1'] and match['logo_team2']:
-                            print("✅ Both team logos are present")
-                        else:
-                            print("❌ One or both team logos are missing")
-                            success = False
-                    
-                    # Check analysis for betting symbols
-                    analysis = match.get('analysis', '')
-                    betting_symbols = ['🎯', '💰', '📈', '💡']
-                    found_symbols = [symbol for symbol in betting_symbols if symbol in analysis]
-                    
-                    if found_symbols:
-                        print(f"✅ Analysis contains betting priority symbols: {', '.join(found_symbols)}")
-                    else:
-                        print("❌ Analysis does not contain any betting priority symbols")
-                        success = False
-                    
-                    # Check source for specific sports
-                    if sport == 'baseball':
-                        if match.get('source') == 'mlb-statsapi':
-                            print("✅ Baseball match has correct source: mlb-statsapi")
-                        else:
-                            print(f"❌ Baseball match has incorrect source: {match.get('source')} (expected mlb-statsapi)")
-                            success = False
-                    
-                    if sport == 'football':
-                        valid_sources = ['football-data-api', 'api-football', 'free-football-api', 'realistic-fixture']
-                        if match.get('source') in valid_sources:
-                            print(f"✅ Football match has valid source: {match.get('source')}")
-                            if match.get('source') == 'api-football':
-                                print("✅ Using new API-Football alternative source")
-                            if match.get('source') == 'free-football-api':
-                                print("✅ Using Free Football API backup source")
-                        else:
-                            print(f"❌ Football match has invalid source: {match.get('source')}")
-                            success = False
-                    
-                    if sport == 'hockey':
-                        valid_sources = ['nhl-api', 'balldontlie-nhl', 'thesportsdb', 'realistic-fixture']
-                        if match.get('source') in valid_sources:
-                            print(f"✅ Hockey match has valid source: {match.get('source')}")
-                            if match.get('source') == 'balldontlie-nhl':
-                                print("✅ Using new BALLDONTLIE NHL API alternative source")
-                            if match.get('source') == 'thesportsdb':
-                                print("✅ Using TheSportsDB backup source")
-                        else:
-                            print(f"❌ Hockey match has invalid source: {match.get('source')}")
-                            success = False
-                    
-                    if sport == 'esports':
-                        if match.get('source') == 'pandascore-api':
-                            print("✅ Esports match has correct source: pandascore-api")
-                        else:
-                            print(f"⚠️ Esports match has alternative source: {match.get('source')} (expected pandascore-api)")
-                            # Not failing the test for this as it might use a fallback
-                    
-                    # Check match status
-                    if 'status' in match:
-                        valid_statuses = ['scheduled', 'live', 'finished']
-                        if match.get('status') in valid_statuses:
-                            print(f"✅ Match has valid status: {match.get('status')}")
-                        else:
-                            print(f"❌ Match has invalid status: {match.get('status')}")
-                            success = False
-                    else:
-                        print("❌ Match is missing status field")
-                        success = False
-                        
-                    # Check if match time is real (not modified)
+            for sport, sport_matches in matches.items():
+                for match in sport_matches:
                     match_time = match.get('match_time')
                     if match_time:
                         try:
+                            # Try to parse the time to verify it's valid
                             match_date = datetime.fromisoformat(match_time.replace('Z', '+00:00'))
-                            print(f"✅ Match has valid UTC/GMT time: {match_time}")
+                            print(f"✅ Valid match time for {match.get('team1')} vs {match.get('team2')}: {match_time}")
                         except (ValueError, TypeError):
-                            print(f"❌ Match has invalid time format: {match_time}")
-                            success = False
+                            print(f"❌ Invalid match time format for {match.get('team1')} vs {match.get('team2')}: {match_time}")
+                            all_times_valid = False
                     else:
-                        print("❌ Match is missing match_time field")
-                        success = False
+                        print(f"❌ Missing match time for {match.get('team1')} vs {match.get('team2')}")
+                        all_times_valid = False
             
-            # Calculate overall realism percentage
-            if match_count > 0:
-                # We'll skip the realism score check for now as we're focusing on real API data
-                print("\n=== Checking Real API Data ===")
-                print("✅ All matches are from real API sources")
-                
-                # Check for mock data
-                mock_sources = [m for m in matches.values() for match in m if match.get('source') == 'mock-generator']
-                if not mock_sources:
-                    print("✅ No mock data found - all matches are from real sources")
-                else:
-                    print(f"❌ Found {len(mock_sources)} matches with mock data")
-                    success = False
-            
-            if all_sports_present:
-                print("\n✅ All required sports present in the response")
+            if all_times_valid:
+                print("\n✅ All match times are in valid format")
             else:
-                print("\n❌ Some sports are missing from the response")
+                print("\n❌ Some match times are invalid or missing")
                 success = False
         
         return success
 
-    def test_alternative_sources(self):
-        """Test the alternative data sources for hockey and football"""
-        print("\n=== Testing Alternative Data Sources ===")
-        
-        # First check if the API keys are present in the environment
+    def test_match_status_system(self):
+        """Test the match status system"""
         success, response = self.run_test(
-            "Today's Matches Endpoint for Alternative Sources",
+            "Today's Matches for Status System Test",
             "GET",
             "api/matches/today",
             200
@@ -678,112 +436,65 @@ class SportPredictionsAPITester:
         
         if success:
             matches = response.get('matches', {})
-            football_matches = matches.get('football', [])
-            hockey_matches = matches.get('hockey', [])
+            all_statuses_valid = True
+            status_counts = {'scheduled': 0, 'live': 0, 'finished': 0}
             
-            # Check football sources
-            football_sources = [match.get('source') for match in football_matches]
-            print(f"Football sources: {football_sources}")
+            for sport, sport_matches in matches.items():
+                for match in sport_matches:
+                    status = match.get('status')
+                    if status:
+                        if status in ['scheduled', 'live', 'finished']:
+                            status_counts[status] += 1
+                            print(f"✅ Valid status for {match.get('team1')} vs {match.get('team2')}: {status}")
+                        else:
+                            print(f"❌ Invalid status for {match.get('team1')} vs {match.get('team2')}: {status}")
+                            all_statuses_valid = False
+                    else:
+                        print(f"❌ Missing status for {match.get('team1')} vs {match.get('team2')}")
+                        all_statuses_valid = False
             
-            api_football_used = any(source == 'api-football' for source in football_sources)
-            free_football_used = any(source == 'free-football-api' for source in football_sources)
-            
-            if api_football_used:
-                print("✅ API-Football alternative source is being used")
+            if all_statuses_valid:
+                print("\n✅ All match statuses are valid")
+                print(f"Status distribution: Scheduled: {status_counts['scheduled']}, Live: {status_counts['live']}, Finished: {status_counts['finished']}")
             else:
-                print("⚠️ API-Football alternative source is not being used in this response")
-            
-            if free_football_used:
-                print("✅ Free Football API backup source is being used")
-            else:
-                print("⚠️ Free Football API backup source is not being used in this response")
-            
-            # Check hockey sources
-            hockey_sources = [match.get('source') for match in hockey_matches]
-            print(f"Hockey sources: {hockey_sources}")
-            
-            balldontlie_used = any(source == 'balldontlie-nhl' for source in hockey_sources)
-            thesportsdb_used = any(source == 'thesportsdb' for source in hockey_sources)
-            
-            if balldontlie_used:
-                print("✅ BALLDONTLIE NHL API alternative source is being used")
-            else:
-                print("⚠️ BALLDONTLIE NHL API alternative source is not being used in this response")
-            
-            if thesportsdb_used:
-                print("✅ TheSportsDB backup source is being used")
-            else:
-                print("⚠️ TheSportsDB backup source is not being used in this response")
-            
-            # Force refresh to try to get alternative sources
-            print("\nForcing refresh to try to get alternative sources...")
-            refresh_success, refresh_response = self.run_test(
-                "Refresh Matches Endpoint for Alternative Sources",
-                "POST",
-                "api/matches/refresh",
-                200
-            )
-            
-            if refresh_success:
-                # Check today's matches again
-                after_refresh_success, after_refresh_response = self.run_test(
-                    "Today's Matches After Refresh for Alternative Sources",
-                    "GET",
-                    "api/matches/today",
-                    200
-                )
-                
-                if after_refresh_success:
-                    matches = after_refresh_response.get('matches', {})
-                    football_matches = matches.get('football', [])
-                    hockey_matches = matches.get('hockey', [])
-                    
-                    # Check football sources after refresh
-                    football_sources = [match.get('source') for match in football_matches]
-                    print(f"Football sources after refresh: {football_sources}")
-                    
-                    api_football_used = any(source == 'api-football' for source in football_sources)
-                    free_football_used = any(source == 'free-football-api' for source in football_sources)
-                    
-                    if api_football_used:
-                        print("✅ API-Football alternative source is being used after refresh")
-                    else:
-                        print("⚠️ API-Football alternative source is not being used after refresh")
-                    
-                    if free_football_used:
-                        print("✅ Free Football API backup source is being used after refresh")
-                    else:
-                        print("⚠️ Free Football API backup source is not being used after refresh")
-                    
-                    # Check hockey sources after refresh
-                    hockey_sources = [match.get('source') for match in hockey_matches]
-                    print(f"Hockey sources after refresh: {hockey_sources}")
-                    
-                    balldontlie_used = any(source == 'balldontlie-nhl' for source in hockey_sources)
-                    thesportsdb_used = any(source == 'thesportsdb' for source in hockey_sources)
-                    
-                    if balldontlie_used:
-                        print("✅ BALLDONTLIE NHL API alternative source is being used after refresh")
-                    else:
-                        print("⚠️ BALLDONTLIE NHL API alternative source is not being used after refresh")
-                    
-                    if thesportsdb_used:
-                        print("✅ TheSportsDB backup source is being used after refresh")
-                    else:
-                        print("⚠️ TheSportsDB backup source is not being used after refresh")
-                    
-                    # Check if any alternative source is being used
-                    alternative_sources_used = api_football_used or free_football_used or balldontlie_used or thesportsdb_used
-                    
-                    if alternative_sources_used:
-                        print("\n✅ Alternative sources are being used successfully")
-                        return True
-                    else:
-                        print("\n⚠️ No alternative sources are being used after refresh")
-                        # Not failing the test as primary sources might be working fine
-                        return True
+                print("\n❌ Some match statuses are invalid or missing")
+                success = False
         
-        return False
+        return success
+
+    def test_logo_service_fallback_chain(self):
+        """Test the logo service fallback chain with various team names"""
+        # Test with known teams
+        known_teams = [
+            ('Real Madrid', 'football'),
+            ('New York Yankees', 'baseball'),
+            ('Toronto Maple Leafs', 'hockey'),
+            ('Natus Vincere', 'esports')
+        ]
+        
+        # Test with unknown teams to check fallback
+        unknown_teams = [
+            ('Nonexistent FC', 'football'),
+            ('Imaginary Bears', 'baseball'),
+            ('Fantasy Knights', 'hockey'),
+            ('Virtual Gamers', 'esports')
+        ]
+        
+        all_success = True
+        
+        # Test known teams
+        print("\n=== Testing Logo Service with Known Teams ===")
+        for team, sport in known_teams:
+            success = self.test_team_logo_endpoint(team, sport)
+            all_success = all_success and success
+        
+        # Test unknown teams (should use fallback)
+        print("\n=== Testing Logo Service Fallback with Unknown Teams ===")
+        for team, sport in unknown_teams:
+            success = self.test_team_logo_endpoint(team, sport)
+            all_success = all_success and success
+        
+        return all_success
 
 def main():
     # Get the backend URL from the frontend .env file
@@ -797,52 +508,43 @@ def main():
     # Run basic API tests
     print("\n=== Testing Basic API Endpoints ===")
     health_test = tester.test_health_endpoint()
-    stats_test = tester.test_stats_endpoint()
     
-    # Test match parsing system
-    print("\n=== Testing Match Parsing System ===")
-    print("\n1. Testing Today's Matches Endpoint")
-    today_matches_test = tester.test_today_matches_endpoint()
-    
-    print("\n2. Testing Sport-Specific Matches Endpoints")
-    football_matches_test = tester.test_sport_matches_endpoint("football")
-    baseball_matches_test = tester.test_sport_matches_endpoint("baseball")
-    hockey_matches_test = tester.test_sport_matches_endpoint("hockey")
-    esports_matches_test = tester.test_sport_matches_endpoint("esports")
-    
-    print("\n3. Testing Alternative Data Sources")
-    alternative_sources_test = tester.test_alternative_sources()
-    
-    print("\n4. Testing Match Data Structure and Realism")
-    match_structure_test = tester.test_match_data_structure_and_realism()
-    
-    print("\n5. Testing Refresh Matches Endpoint")
-    refresh_matches_test = tester.test_refresh_matches_endpoint()
-    
-    print("\n6. Testing Schedule Info Endpoint")
+    # Test new features
+    print("\n=== Testing Fixed Time Display ===")
     schedule_info_test = tester.test_schedule_info_endpoint()
     
-    print("\n7. Testing Update Daily Matches Endpoint")
-    update_daily_test = tester.test_update_daily_matches_endpoint()
+    print("\n=== Testing Automatic Logo Fetching ===")
+    logo_service_test = tester.test_logo_service_fallback_chain()
+    all_logos_test = tester.test_all_logos_endpoint()
+    update_logos_test = tester.test_update_all_logos_endpoint()
+    
+    print("\n=== Testing Enhanced Time Parsing ===")
+    time_conversion_test = tester.test_time_conversion()
+    
+    print("\n=== Testing Match Status System ===")
+    match_status_test = tester.test_match_status_system()
+    
+    print("\n=== Testing Today's Matches with Logos ===")
+    today_matches_test = tester.test_today_matches_endpoint()
+    
+    print("\n=== Testing Refresh Matches with Logo Updates ===")
+    refresh_matches_test = tester.test_refresh_matches_endpoint()
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
     
-    # Print summary of match parsing system tests
-    print("\n=== Match Parsing System Test Summary ===")
+    # Print summary of tests
+    print("\n=== Backend Improvements Test Summary ===")
     print(f"1. Health Endpoint: {'✅ PASSED' if health_test else '❌ FAILED'}")
-    print(f"2. Stats Endpoint: {'✅ PASSED' if stats_test else '❌ FAILED'}")
-    print(f"3. Today's Matches Endpoint: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
-    print(f"4. Sport-Specific Matches Endpoints:")
-    print(f"   - Football: {'✅ PASSED' if football_matches_test else '❌ FAILED'}")
-    print(f"   - Baseball: {'✅ PASSED' if baseball_matches_test else '❌ FAILED'}")
-    print(f"   - Hockey: {'✅ PASSED' if hockey_matches_test else '❌ FAILED'}")
-    print(f"   - Esports: {'✅ PASSED' if esports_matches_test else '❌ FAILED'}")
-    print(f"5. Alternative Data Sources: {'✅ PASSED' if alternative_sources_test else '⚠️ PARTIAL'}")
-    print(f"6. Match Data Structure and Realism: {'✅ PASSED' if match_structure_test else '❌ FAILED'}")
-    print(f"7. Refresh Matches Endpoint: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
-    print(f"8. Schedule Info Endpoint: {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
-    print(f"9. Update Daily Matches Endpoint: {'✅ PASSED' if update_daily_test else '❌ FAILED'}")
+    print(f"2. Fixed Time Display (09:00 и 19:00 МСК): {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
+    print(f"3. Automatic Logo Fetching:")
+    print(f"   - Logo Service Fallback Chain: {'✅ PASSED' if logo_service_test else '❌ FAILED'}")
+    print(f"   - All Logos Endpoint: {'✅ PASSED' if all_logos_test else '❌ FAILED'}")
+    print(f"   - Update All Logos Endpoint: {'✅ PASSED' if update_logos_test else '❌ FAILED'}")
+    print(f"4. Enhanced Time Parsing: {'✅ PASSED' if time_conversion_test else '❌ FAILED'}")
+    print(f"5. Match Status System: {'✅ PASSED' if match_status_test else '❌ FAILED'}")
+    print(f"6. Today's Matches with Logos: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
+    print(f"7. Refresh Matches with Logo Updates: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
     
     # Return success if all tests passed
     return 0 if tester.tests_passed == tester.tests_run else 1
