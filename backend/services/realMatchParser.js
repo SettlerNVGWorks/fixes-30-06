@@ -395,6 +395,11 @@ class RealMatchParser {
     }
   }
 
+  generateMatchId(match) {
+    const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
+    return str.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  }
+
   // Generate sport-specific generic analysis with enhanced betting priorities
   getGenericAnalysis(sport) {
     const analyses = {
