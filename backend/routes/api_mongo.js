@@ -1,5 +1,5 @@
 const express = require('express');
-const { getDatabase, getSportAnalysis } = require('../database_mongo');
+const { getDatabase } = require('../database_mongo');
 const RealMatchParser = require('../services/realMatchParser');
 
 const router = express.Router();
