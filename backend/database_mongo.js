@@ -89,12 +89,16 @@ const initDatabase = async () => {
     }
 
     // Create indexes for better performance
-    await db.collection('users').createIndex({ telegram_tag: 1 }, { unique: true });
-    await db.collection('users').createIndex({ username: 1 }, { unique: true });
+    await db.collection('users').createIndex({ email: 1 }, { unique: true });
+    await db.collection('users').createIndex({ telegram_user_id: 1 }, { unique: true, sparse: true });
+    await db.collection('users').createIndex({ verification_token: 1 }, { sparse: true });
+    await db.collection('users').createIndex({ password_reset_token: 1 }, { sparse: true });
     await db.collection('matches').createIndex({ match_date: 1 });
     await db.collection('matches').createIndex({ sport: 1 });
     await db.collection('predictions').createIndex({ sport: 1 });
     await db.collection('predictions').createIndex({ match_date: 1 });
+    await db.collection('telegram_auth_sessions').createIndex({ auth_token: 1 }, { unique: true });
+    await db.collection('telegram_auth_sessions').createIndex({ expires_at: 1 }, { expireAfterSeconds: 0 });
 
     // Initialize stats collection if empty
     const statsCount = await db.collection('stats').countDocuments();
@@ -222,6 +226,64 @@ const getTeamStats = async (teamName, sport) => {
   }
 };
 
+// Create Telegram auth session
+const createTelegramAuthSession = async (authToken, userEmail = null) => {
+  try {
+    if (!db) {
+      await connectDatabase();
+    }
+
+    const session = {
+      auth_token: authToken,
+      user_email: userEmail,
+      created_at: new Date(),
+      expires_at: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
+      status: 'pending', // pending, confirmed, expired
+      telegram_chat_id: null,
+      telegram_user_info: null
+    };
+
+    await db.collection('telegram_auth_sessions').insertOne(session);
+    return session;
+  } catch (error) {
+    console.error('Error creating Telegram auth session:', error);
+    throw error;
+  }
+};
+
+// Update Telegram auth session
+const updateTelegramAuthSession = async (authToken, updateData) => {
+  try {
+    if (!db) {
+      await connectDatabase();
+    }
+
+    const result = await db.collection('telegram_auth_sessions').updateOne(
+      { auth_token: authToken },
+      { $set: { ...updateData, updated_at: new Date() } }
+    );
+
+    return result.modifiedCount > 0;
+  } catch (error) {
+    console.error('Error updating Telegram auth session:', error);
+    throw error;
+  }
+};
+
+// Get Telegram auth session
+const getTelegramAuthSession = async (authToken) => {
+  try {
+    if (!db) {
+      await connectDatabase();
+    }
+
+    return await db.collection('telegram_auth_sessions').findOne({ auth_token: authToken });
+  } catch (error) {
+    console.error('Error getting Telegram auth session:', error);
+    return null;
+  }
+};
+
 // Close database connection
 const closeDatabase = async () => {
   try {
@@ -244,5 +306,8 @@ module.exports = {
   updateTeamStats,
   getTeamStats,
   closeDatabase,
-  sportAnalyses
+  sportAnalyses,
+  createTelegramAuthSession,
+  updateTelegramAuthSession,
+  getTelegramAuthSession
 };
