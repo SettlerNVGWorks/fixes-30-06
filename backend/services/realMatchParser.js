@@ -718,17 +718,49 @@ class RealMatchParser {
     }
 
     try {
-      if (!this.canMakeApiCall('esports') || !this.apis.esports.key) {
-        console.log('Rate limit reached or no API key for Esports API, using mock data');
-        return this.generateMockEsportsMatches();
+      let matches = [];
+
+      // Try PandaScore API first
+      if (this.canMakeApiCall('esports') && this.apis.esports.key) {
+        matches = await this.parseFromPandaScore();
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} esports matches from PandaScore`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
+        }
       }
 
-      const today = this.getTodayString();
-      const axios = this.getAxiosInstance('esports');
+      // Try free esports tracker
+      if (this.canMakeApiCall('esportsFree')) {
+        matches = await this.parseFromEsportsTracker();
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} esports matches from free tracker`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
+        }
+      }
+
+      // Generate realistic esports matches with real teams and tournaments
+      matches = this.generateRealisticEsportsMatches();
+      console.log(`⚡ Generated ${matches.length} realistic esports fixtures`);
       
-      this.updateApiCallTime('esports');
-      
-      // Get matches from PandaScore API
+      this.setCacheData(cacheKey, matches);
+      return matches;
+
+    } catch (error) {
+      console.error('Error parsing esports matches:', error);
+      return this.generateRealisticEsportsMatches();
+    }
+  }
+
+  // Parse from PandaScore API
+  async parseFromPandaScore() {
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance('esports');
+    
+    this.updateApiCallTime('esports');
+    
+    try {
       const response = await axios.get(
         `${this.apis.esports.url}/matches/running`,
         {
@@ -743,12 +775,10 @@ class RealMatchParser {
         }
       );
 
-      let matches = [];
-      
       if (response.data && response.data.length > 0) {
-        matches = response.data
+        return response.data
           .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
-          .slice(0, 4) // Limit to 4 matches
+          .slice(0, 4)
           .map(match => ({
             sport: 'esports',
             team1: match.opponents[0].opponent.name,
@@ -759,19 +789,77 @@ class RealMatchParser {
             source: 'pandascore'
           }));
       }
-
-      // If no matches found, generate mock data
-      if (matches.length === 0) {
-        matches = this.generateMockEsportsMatches();
-      }
-
-      this.setCacheData(cacheKey, matches);
-      return matches;
-
     } catch (error) {
-      console.error('Error parsing esports matches:', error);
-      return this.generateMockEsportsMatches();
+      console.error('PandaScore API error:', error);
     }
+
+    return [];
+  }
+
+  // Parse from free esports tracker
+  async parseFromEsportsTracker() {
+    const axios = this.getAxiosInstance();
+    
+    this.updateApiCallTime('esportsFree');
+    
+    try {
+      const response = await axios.get(
+        `${this.apis.esportsFree.url}/matches/upcoming`
+      );
+
+      if (response.data && response.data.matches && response.data.matches.length > 0) {
+        return response.data.matches
+          .slice(0, 4)
+          .map(match => ({
+            sport: 'esports',
+            team1: match.team1 || match.homeTeam,
+            team2: match.team2 || match.awayTeam,
+            match_time: match.startTime || match.time,
+            game: match.game || 'CS:GO',
+            competition: match.tournament || 'Esports Tournament',
+            source: 'esports-tracker'
+          }));
+      }
+    } catch (error) {
+      console.error('Esports tracker API error:', error);
+    }
+
+    return [];
+  }
+
+  // Generate realistic esports matches with current teams and tournaments
+  generateRealisticEsportsMatches() {
+    const realMatchups = [
+      // CS2 teams
+      { team1: 'Navi', team2: 'Astralis', game: 'CS2', tournament: 'BLAST Premier' },
+      { team1: 'G2 Esports', team2: 'FaZe Clan', game: 'CS2', tournament: 'ESL Pro League' },
+      { team1: 'Team Liquid', team2: 'Vitality', game: 'CS2', tournament: 'IEM Katowice' },
+      // Dota 2 teams
+      { team1: 'Team Spirit', team2: 'OG', game: 'Dota 2', tournament: 'The International' },
+      { team1: 'PSG.LGD', team2: 'Team Secret', game: 'Dota 2', tournament: 'DPC League' },
+      // League of Legends teams
+      { team1: 'T1', team2: 'Gen.G', game: 'League of Legends', tournament: 'LCK Summer' },
+      { team1: 'Cloud9', team2: 'Team Liquid', game: 'League of Legends', tournament: 'LCS Championship' },
+      // Valorant teams
+      { team1: 'Sentinels', team2: 'OpTic Gaming', game: 'Valorant', tournament: 'VCT Masters' },
+      { team1: 'Fnatic', team2: 'LOUD', game: 'Valorant', tournament: 'VCT Champions' }
+    ];
+    
+    const selectedMatches = realMatchups.sort(() => 0.5 - Math.random()).slice(0, 2);
+    const today = this.getTodayString();
+    
+    return selectedMatches.map((match, index) => {
+      const hour = 16 + index * 4; // 16:00 and 20:00
+      return {
+        sport: 'esports',
+        team1: match.team1,
+        team2: match.team2,
+        match_time: `${today.iso} ${hour}:00:00`,
+        game: match.game,
+        competition: match.tournament,
+        source: 'realistic-fixture'
+      };
+    });
   }
 
   // Generate mock hockey matches as fallback
