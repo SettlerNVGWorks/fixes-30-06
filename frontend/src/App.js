@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import crownImage from './source_pics/main-pic.jpg';
 import logoVideo from './source_pics/main-vid.mp4';
 import onewin_logo from './source_pics/1win-mid-1280x720-1.png';
 import { authAPI, sportsAPI } from './services/api';
 import TodayMatches from './components/TodayMatches';
+import AuthModal from './components/AuthModal';
+import EmailVerification from './components/EmailVerification';
 
-function App() {
+// Main App Component
+const MainApp = () => {
   const [showServices, setShowServices] = useState(false);
   const [showSponsor, setShowSponsor] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showAccount, setShowAccount] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showGame, setShowGame] = useState(false);
   const [showFAQ, setShowFAQ] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -19,21 +23,6 @@ function App() {
   // Authentication states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const [authMode, setAuthMode] = useState('login'); // 'login', 'register', 'profile', 'changePassword'
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState('');
-  const [authSuccess, setAuthSuccess] = useState('');
-
-  // Form states
-  const [formData, setFormData] = useState({
-    telegram_tag: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
-  });
 
   const [stats, setStats] = useState({
     totalPredictions: 1247,
@@ -44,8 +33,8 @@ function App() {
 
   // Check for existing token on component mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
     
     if (token && userData) {
       try {
@@ -56,6 +45,8 @@ function App() {
         console.error('Error parsing user data:', error);
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('userData');
       }
     }
 
@@ -80,133 +71,11 @@ function App() {
     }
   };
 
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    // Clear errors when user types
-    if (authError) setAuthError('');
-    if (authSuccess) setAuthSuccess('');
-  };
-
-  // Handle registration
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-
-    try {
-      const response = await authAPI.register({
-        telegram_tag: formData.telegram_tag,
-        username: formData.username,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword
-      });
-
-      const { token, user } = response.data;
-      
-      // Save token and user data
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userData', JSON.stringify(user));
-      
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-      setAuthMode('profile');
-      setAuthSuccess('Регистрация прошла успешно!');
-      
-      // Clear form
-      setFormData({
-        telegram_tag: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Ошибка регистрации';
-      setAuthError(errorMessage);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  // Handle login
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-
-    try {
-      const response = await authAPI.login({
-        telegram_tag: formData.telegram_tag,
-        password: formData.password
-      });
-
-      const { token, user } = response.data;
-      
-      // Save token and user data
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('userData', JSON.stringify(user));
-      
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-      setAuthMode('profile');
-      setAuthSuccess('Вход выполнен успешно!');
-      
-      // Clear form
-      setFormData({
-        telegram_tag: '',
-        username: '',
-        password: '',
-        confirmPassword: '',
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Ошибка входа';
-      setAuthError(errorMessage);
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-
-  // Handle password change
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError('');
-    setAuthSuccess('');
-
-    try {
-      await authAPI.changePassword({
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword,
-        confirmNewPassword: formData.confirmNewPassword
-      });
-
-      setAuthSuccess('Пароль успешно изменен!');
-      
-      // Clear form
-      setFormData({
-        ...formData,
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || 'Ошибка смены пароля';
-      setAuthError(errorMessage);
-    } finally {
-      setAuthLoading(false);
-    }
+  // Handle successful authentication
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+    setShowAuthModal(false);
   };
 
   // Handle logout
@@ -219,12 +88,10 @@ function App() {
       // Clear local storage and state
       localStorage.removeItem('authToken');
       localStorage.removeItem('userData');
+      sessionStorage.removeItem('authToken');
+      sessionStorage.removeItem('userData');
       setCurrentUser(null);
       setIsLoggedIn(false);
-      setAuthMode('login');
-      setShowAccount(false);
-      setAuthError('');
-      setAuthSuccess('');
     }
   };
 
@@ -291,18 +158,35 @@ function App() {
             </div>
         <div className="flex items-center space-x-3">
           {/* Account Button with Text */}
-          <button
-            onClick={() => setShowAccount(true)}
-            className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition group"
-            aria-label="Аккаунт"
-          >
-            <svg className="w-6 h-6 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span className="text-white font-medium text-sm hidden sm:block">
-              {isLoggedIn && currentUser ? currentUser.username : 'Войти'}
-            </span>
-          </button>
+          {isLoggedIn ? (
+            <div className="flex items-center space-x-3">
+              <div className="text-white text-sm">
+                <span className="text-gold-400">Добро пожаловать, </span>
+                <span className="font-medium">{currentUser?.username}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-3 py-2 rounded-full bg-red-600/20 border border-red-500/30 hover:bg-red-600/30 transition group"
+                aria-label="Выйти"
+              >
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="text-red-400 text-sm font-medium hidden sm:block">Выйти</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="flex items-center space-x-2 px-3 py-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition group"
+              aria-label="Войти"
+            >
+              <svg className="w-6 h-6 text-white group-hover:animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <span className="text-white font-medium text-sm hidden sm:block">Войти</span>
+            </button>
+          )}
           
           {/* Hamburger Menu Button */}
           <button
@@ -570,7 +454,8 @@ function App() {
           </div>
         </div>
       )}
-      {/* Модальное окно: Наши услуги */}
+      
+      {/* Modal Windows - keeping existing modals */}
       {showServices && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
           <div className="bg-[#0a1b2a] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500 overflow-y-auto max-h-[80vh]">
@@ -645,7 +530,8 @@ function App() {
           </div>
         </div>
       )}
-      {/* Модальное окно: Наш бот */}
+      
+      {/* Keeping all other existing modals... */}
       {showBot && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
           <div className="bg-[#123045] text-white rounded-xl shadow-2xl max-w-md w-full p-6 relative border border-yellow-500 overflow-y-auto max-h-[80vh]">
@@ -682,326 +568,6 @@ function App() {
         </div>
       )}
 
-
-      {/* Модальное окно: Аккаунт/Аутентификация */}
-      {showAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
-          <div className="bg-[#0a1b2a] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500 max-h-[80vh] overflow-y-auto">
-            
-            {!isLoggedIn ? (
-              // Форма входа/регистрации
-              <div>
-                <div className="flex justify-center mb-6">
-                  <button
-                    onClick={() => setAuthMode('login')}
-                    className={`px-4 py-2 mr-2 rounded-lg font-semibold transition ${
-                      authMode === 'login' 
-                        ? 'bg-yellow-500 text-[#0a1b2a]' 
-                        : 'bg-transparent text-yellow-500 border border-yellow-500'
-                    }`}
-                  >
-                    Вход
-                  </button>
-                  <button
-                    onClick={() => setAuthMode('register')}
-                    className={`px-4 py-2 rounded-lg font-semibold transition ${
-                      authMode === 'register' 
-                        ? 'bg-yellow-500 text-[#0a1b2a]' 
-                        : 'bg-transparent text-yellow-500 border border-yellow-500'
-                    }`}
-                  >
-                    Регистрация
-                  </button>
-                </div>
-
-                {/* Display messages */}
-                {authError && (
-                  <div className="mb-4 p-3 bg-red-600/20 border border-red-500 rounded-lg text-red-300 text-sm">
-                    {authError}
-                  </div>
-                )}
-                
-                {authSuccess && (
-                  <div className="mb-4 p-3 bg-green-600/20 border border-green-500 rounded-lg text-green-300 text-sm">
-                    {authSuccess}
-                  </div>
-                )}
-
-                {authMode === 'login' ? (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4 text-center">Вход в систему</h2>
-                    <p className="text-sm text-gray-300 mb-4 text-center">
-                      Используйте свой Telegram тег и пароль для входа
-                    </p>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Telegram тег</label>
-                        <input
-                          type="text"
-                          name="telegram_tag"
-                          value={formData.telegram_tag}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="@username"
-                          required
-                          disabled={authLoading}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Пароль</label>
-                        <input
-                          type="password"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите пароль"
-                          required
-                          disabled={authLoading}
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={authLoading}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-[#0a1b2a] font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {authLoading ? 'Вход...' : 'Войти'}
-                      </button>
-                    </form>
-                  </div>
-                ) : (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4 text-center">Регистрация</h2>
-                    <p className="text-sm text-yellow-400 mb-4 text-center font-medium">
-                      ⚠️ Указывайте валидный Telegram тег! Он понадобится для входа в систему.
-                    </p>
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <label className="block text-sm font-medium">Telegram тег</label>
-                          <div className="relative group">
-                            <button
-                              type="button"
-                              className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center animate-pulse hover:animate-none cursor-help"
-                              title="Информация о Telegram теге"
-                            >
-                              ℹ
-                            </button>
-                            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-2 px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 w-64">
-                              <div className="text-center">
-                                <p className="font-semibold mb-1">Что такое Telegram тег?</p>
-                                <p className="mb-2">Это ваше имя пользователя в Telegram, начинающееся с @</p>
-                                <p className="text-yellow-300">Найти: Настройки → Изменить профиль → Имя пользователя</p>
-                              </div>
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
-                            </div>
-                          </div>
-                        </div>
-                        <input
-                          type="text"
-                          name="telegram_tag"
-                          value={formData.telegram_tag}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="@username (обязательно с @)"
-                          required
-                          disabled={authLoading}
-                        />
-                        <p className="text-xs text-gray-400 mt-1">
-                          Пример: @myusername (этот тег будет использоваться для входа)
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Имя пользователя (отображаемое)</label>
-                        <input
-                          type="text"
-                          name="username"
-                          value={formData.username}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите имя для отображения"
-                          required
-                          disabled={authLoading}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Пароль</label>
-                        <input
-                          type="password"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите пароль (минимум 6 символов)"
-                          required
-                          disabled={authLoading}
-                          minLength="6"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Подтвердите пароль</label>
-                        <input
-                          type="password"
-                          name="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Повторите пароль"
-                          required
-                          disabled={authLoading}
-                          minLength="6"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={authLoading}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-[#0a1b2a] font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {authLoading ? 'Регистрация...' : 'Зарегистрироваться'}
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Профиль пользователя
-              <div>
-                <div className="flex justify-center mb-6">
-                  <button
-                    onClick={() => setAuthMode('profile')}
-                    className={`px-4 py-2 mr-2 rounded-lg font-semibold transition ${
-                      authMode === 'profile' 
-                        ? 'bg-yellow-500 text-[#0a1b2a]' 
-                        : 'bg-transparent text-yellow-500 border border-yellow-500'
-                    }`}
-                  >
-                    Профиль
-                  </button>
-                  <button
-                    onClick={() => setAuthMode('changePassword')}
-                    className={`px-4 py-2 rounded-lg font-semibold transition ${
-                      authMode === 'changePassword' 
-                        ? 'bg-yellow-500 text-[#0a1b2a]' 
-                        : 'bg-transparent text-yellow-500 border border-yellow-500'
-                    }`}
-                  >
-                    Смена пароля
-                  </button>
-                </div>
-
-                {/* Display messages */}
-                {authError && (
-                  <div className="mb-4 p-3 bg-red-600/20 border border-red-500 rounded-lg text-red-300 text-sm">
-                    {authError}
-                  </div>
-                )}
-                
-                {authSuccess && (
-                  <div className="mb-4 p-3 bg-green-600/20 border border-green-500 rounded-lg text-green-300 text-sm">
-                    {authSuccess}
-                  </div>
-                )}
-
-                {authMode === 'profile' ? (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4 text-center">Мой профиль</h2>
-                    <div className="bg-[#142b45] rounded-lg p-4 space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Telegram:</span>
-                        <span className="text-yellow-400">{currentUser?.telegram_tag || 'Не указан'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Пользователь:</span>
-                        <span className="text-yellow-400">{currentUser?.username || 'Не указан'}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-300">Дата регистрации:</span>
-                        <span className="text-yellow-400">
-                          {currentUser?.registration_date ? formatDate(currentUser.registration_date) : 'Не указана'}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
-                    >
-                      Выйти
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <h2 className="text-2xl font-bold mb-4 text-center">Смена пароля</h2>
-                    <form onSubmit={handleChangePassword} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Текущий пароль</label>
-                        <input
-                          type="password"
-                          name="currentPassword"
-                          value={formData.currentPassword}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите текущий пароль"
-                          required
-                          disabled={authLoading}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Новый пароль</label>
-                        <input
-                          type="password"
-                          name="newPassword"
-                          value={formData.newPassword}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Введите новый пароль (минимум 6 символов)"
-                          required
-                          disabled={authLoading}
-                          minLength="6"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Подтвердите новый пароль</label>
-                        <input
-                          type="password"
-                          name="confirmNewPassword"
-                          value={formData.confirmNewPassword}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 bg-[#142b45] border border-yellow-400 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-yellow-300"
-                          placeholder="Повторите новый пароль"
-                          required
-                          disabled={authLoading}
-                          minLength="6"
-                        />
-                      </div>
-                      <button
-                        type="submit"
-                        disabled={authLoading}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-[#0a1b2a] font-bold py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {authLoading ? 'Изменение...' : 'Изменить пароль'}
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            )}
-            
-            <button
-              onClick={() => {
-                setShowAccount(false);
-                setAuthError('');
-                setAuthSuccess('');
-              }}
-              className="absolute top-3 right-3 text-gray-400 hover:text-white text-xl"
-              aria-label="Закрыть окно аккаунта"
-            >
-              ✖
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Модальное окно: Мини-игра */}
       {showGame && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
           <div className="bg-[#1a1f2e] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500">
@@ -1012,7 +578,6 @@ function App() {
         </div>
       )}
 
-      {/* Модальное окно: FAQ */}
       {showFAQ && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
           <div className="bg-[#1c2a38] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500 max-h-[80vh] overflow-y-auto">
@@ -1082,7 +647,6 @@ function App() {
         </div>
       )}
 
-      {/* Модальное окно: Контакты */}
       {showContact && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
           <div className="bg-[#1d2f3a] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500">
@@ -1118,8 +682,6 @@ function App() {
         </div>
       )}
 
-
-      {/* Модальное окно: Спонсор */}
       {showSponsor && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 px-4">
         <div className="bg-[#0a1b2a] text-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative border border-yellow-500">
@@ -1143,7 +705,26 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Authentication Modal */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
+  );
+};
+
+// App with Router
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainApp />} />
+        <Route path="/verify-email" element={<EmailVerification />} />
+      </Routes>
+    </Router>
   );
 }
 
