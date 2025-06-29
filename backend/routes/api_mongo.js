@@ -280,7 +280,8 @@ router.get('/matches/today', async (req, res) => {
       date: new Date().toISOString().split('T')[0],
       total_matches: matches.length,
       matches: groupedMatches,
-      sports_available: Object.keys(groupedMatches)
+      sports_available: Object.keys(groupedMatches),
+      update_schedule: "Автоматическое обновление в 12:00 и 00:00 МСК"
     });
   } catch (error) {
     console.error('Today matches error:', error);
