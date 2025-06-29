@@ -1418,10 +1418,10 @@ class RealMatchParser {
         
         // Add team logos if not already present
         if (!match.logo_team1) {
-          match.logo_team1 = this.getTeamLogoUrl(match.team1, match.sport);
+          match.logo_team1 = await this.getTeamLogoUrl(match.team1, match.sport);
         }
         if (!match.logo_team2) {
-          match.logo_team2 = this.getTeamLogoUrl(match.team2, match.sport);
+          match.logo_team2 = await this.getTeamLogoUrl(match.team2, match.sport);
         }
         
         // Determine match status based on real time
