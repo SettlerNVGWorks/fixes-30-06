@@ -411,30 +411,36 @@ class SportPredictionsAPITester:
                     print("❌ Some matches are missing team logos after refresh")
                     success = False
                 
-                # Check for football matches (should be 0 in off-season)
-                football_matches = matches.get('football', [])
-                if len(football_matches) == 0:
-                    print("✅ No football matches found after refresh (correct for off-season)")
+                # Check that only baseball and hockey are present
+                expected_sports = ['baseball', 'hockey']
+                sports_available = list(matches.keys())
+                unexpected_sports = [sport for sport in sports_available if sport not in expected_sports]
+                missing_sports = [sport for sport in expected_sports if sport not in sports_available]
+                
+                if not unexpected_sports and not missing_sports:
+                    print("✅ Only baseball and hockey sports are present after refresh (as expected after changes)")
                 else:
-                    print(f"❌ Found {len(football_matches)} football matches after refresh during off-season")
+                    if unexpected_sports:
+                        print(f"❌ Found unexpected sports after refresh that should have been removed: {', '.join(unexpected_sports)}")
+                        success = False
+                    if missing_sports:
+                        print(f"❌ Missing expected sports after refresh: {', '.join(missing_sports)}")
+                        success = False
+                
+                # Check football matches (should be 0 after changes)
+                football_matches = matches.get('football', [])
+                if not football_matches:
+                    print("✅ No football matches found after refresh (correct after changes)")
+                else:
+                    print(f"❌ Found {len(football_matches)} football matches after refresh when they should have been removed")
                     success = False
                 
-                # Check for fake matches
-                fake_matches = []
-                for sport, sport_matches in matches.items():
-                    for match in sport_matches:
-                        team1 = match.get('team1', '')
-                        team2 = match.get('team2', '')
-                        if ((team1 == 'Real Madrid' and team2 == 'Barcelona') or 
-                            (team1 == 'Barcelona' and team2 == 'Real Madrid') or
-                            (team1 == 'Manchester City' and team2 == 'Liverpool') or
-                            (team1 == 'Liverpool' and team2 == 'Manchester City')):
-                            fake_matches.append(f"{team1} vs {team2}")
-                
-                if not fake_matches:
-                    print("✅ No fake matches found after refresh")
+                # Check esports matches (should be 0 after changes)
+                esports_matches = matches.get('esports', [])
+                if not esports_matches:
+                    print("✅ No esports matches found after refresh (correct after changes)")
                 else:
-                    print(f"❌ Found fake matches after refresh: {', '.join(fake_matches)}")
+                    print(f"❌ Found {len(esports_matches)} esports matches after refresh when they should have been removed")
                     success = False
                 
                 # Check for mock data
@@ -449,10 +455,6 @@ class SportPredictionsAPITester:
                 else:
                     print(f"❌ Found {len(mock_sources)} matches with mock data after refresh")
                     success = False
-                
-                # Check logs for "No football matches found" message
-                # This would require checking server logs, which we can't do directly in this test
-                print("⚠️ Cannot directly check server logs for 'No football matches found' message")
             else:
                 print("❌ Failed to get matches after refresh")
                 success = False
