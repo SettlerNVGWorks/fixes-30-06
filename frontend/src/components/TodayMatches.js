@@ -26,18 +26,30 @@ const TodayMatches = () => {
     try {
       setLoading(true);
       setError('');
+      console.log('🔄 Загружаем матчи на сегодня...');
+      
       const response = await matchesAPI.getTodayMatches();
       const data = response.data;
+      
+      console.log('✅ Получены данные матчей:', data);
       
       if (data.success) {
         setMatches(data.matches);
         setLastUpdated(new Date());
+        console.log(`✅ Загружено матчей: ${data.total}`);
       } else {
         setError('Не удалось загрузить матчи');
+        console.error('❌ Backend вернул success: false');
       }
     } catch (err) {
-      console.error('Error loading matches:', err);
-      setError('Ошибка загрузки матчей');
+      console.error('❌ Ошибка загрузки матчей:', err);
+      if (err.code === 'NETWORK_ERROR' || err.message.includes('CORS')) {
+        setError('Ошибка подключения к серверу. Проверьте что backend запущен на localhost:8001');
+      } else if (err.response?.status === 500) {
+        setError('Ошибка сервера. Проверьте логи backend');
+      } else {
+        setError(`Ошибка загрузки матчей: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
