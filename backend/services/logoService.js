@@ -49,12 +49,55 @@ class LogoService {
       'Barcelona': ['barcelona', 'barca', 'fc barcelona'],
       'Manchester City': ['man city', 'manchester city', 'city'],
       'Manchester United': ['man united', 'manchester united', 'united'],
+      'Liverpool': ['liverpool', 'lfc'],
       
       // Esports team mappings
       'Natus Vincere': ['navi', 'natus vincere', 'na-vi'],
       'G2 Esports': ['g2', 'g2 esports'],
       'Team Liquid': ['liquid', 'team liquid', 'tl'],
       'FaZe Clan': ['faze', 'faze clan']
+    };
+
+    // Direct logo URLs for popular teams
+    this.directLogos = {
+      // Football teams
+      'Real Madrid': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/400px-Real_Madrid_CF.svg.png',
+      'Barcelona': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/300px-FC_Barcelona_%28crest%29.svg.png',
+      'Manchester City': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/Manchester_City_FC_badge.svg/300px-Manchester_City_FC_badge.svg.png',
+      'Manchester United': 'https://upload.wikimedia.org/wikipedia/en/thumb/7/7a/Manchester_United_FC_crest.svg/300px-Manchester_United_FC_crest.svg.png',
+      'Liverpool': 'https://upload.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/300px-Liverpool_FC.svg.png',
+      'Arsenal': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/53/Arsenal_FC.svg/300px-Arsenal_FC.svg.png',
+      'Chelsea': 'https://upload.wikimedia.org/wikipedia/en/thumb/c/cc/Chelsea_FC.svg/300px-Chelsea_FC.svg.png',
+      'Paris Saint-Germain': 'https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/Paris_Saint-Germain_F.C..svg/300px-Paris_Saint-Germain_F.C..svg.png',
+      'Bayern Munich': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/FC_Bayern_München_logo_%282017%29.svg/300px-FC_Bayern_München_logo_%282017%29.svg.png',
+      'Juventus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Juventus_FC_logo_%282017%29.svg/300px-Juventus_FC_logo_%282017%29.svg.png',
+      
+      // MLB teams  
+      'New York Yankees': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/NewYorkYankees_PrimaryLogo.svg/300px-NewYorkYankees_PrimaryLogo.svg.png',
+      'Boston Red Sox': 'https://upload.wikimedia.org/wikipedia/en/thumb/6/6d/RedSoxPrimary_HangingSocks.svg/300px-RedSoxPrimary_HangingSocks.svg.png',
+      'Los Angeles Dodgers': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Los_Angeles_Dodgers_Logo.svg/300px-Los_Angeles_Dodgers_Logo.svg.png',
+      'Houston Astros': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Houston-Astros-Logo.svg/300px-Houston-Astros-Logo.svg.png',
+      'Tampa Bay Rays': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Tampa_Bay_Rays_logo_2019.svg/300px-Tampa_Bay_Rays_logo_2019.svg.png',
+      'Cleveland Guardians': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Cleveland_Guardians_cap_logo.svg/300px-Cleveland_Guardians_cap_logo.svg.png',
+      'St. Louis Cardinals': 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/St._Louis_Cardinals_insignia_logo.svg/300px-St._Louis_Cardinals_insignia_logo.svg.png',
+      'Pittsburgh Pirates': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Pittsburgh_Pirates_logo_2014.svg/300px-Pittsburgh_Pirates_logo_2014.svg.png',
+      'New York Mets': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/New_York_Mets_Insignia.svg/330px-New_York_Mets_Insignia.svg.png',
+      
+      // NHL teams
+      'Toronto Maple Leafs': 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b6/Toronto_Maple_Leafs_2016_logo.svg/300px-Toronto_Maple_Leafs_2016_logo.svg.png',
+      'Montreal Canadiens': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Montreal_Canadiens.svg/330px-Montreal_Canadiens.svg.png',
+      'Boston Bruins': 'https://upload.wikimedia.org/wikipedia/en/thumb/1/12/Boston_Bruins.svg/300px-Boston_Bruins.svg.png',
+      'New York Rangers': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/New_York_Rangers.svg/300px-New_York_Rangers.svg.png',
+      'Chicago Blackhawks': 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Chicago_Blackhawks_logo.svg/300px-Chicago_Blackhawks_logo.svg.png',
+      'Detroit Red Wings': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/Detroit_Red_Wings_logo.svg/300px-Detroit_Red_Wings_logo.svg.png',
+      
+      // Esports teams  
+      'FaZe Clan': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/FaZe_Clan_2025_svg.svg/330px-FaZe_Clan_2025_svg.svg.png',
+      'Team Liquid': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Team_Liquid_logo_2017.svg/300px-Team_Liquid_logo_2017.svg.png',
+      'Natus Vincere': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Natus_Vincere_Logo_2021.svg/300px-Natus_Vincere_Logo_2021.svg.png',
+      'G2 Esports': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/G2_Esports_logo.svg/300px-G2_Esports_logo.svg.png',
+      'Cloud9': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Cloud9_logo.svg/300px-Cloud9_logo.svg.png',
+      'TSM': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Team_SoloMid_logo.svg/300px-Team_SoloMid_logo.svg.png'
     };
   }
 
