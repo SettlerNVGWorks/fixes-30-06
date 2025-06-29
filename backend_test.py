@@ -613,16 +613,30 @@ class SportPredictionsAPITester:
                             print(f"⚠️ Esports match has alternative source: {match.get('source')} (expected pandascore-api)")
                             # Not failing the test for this as it might use a fallback
                     
-                    # Check realism score
-                    if 'realism_score' in match:
-                        realism_score = match.get('realism_score', 0)
-                        total_realism_score += realism_score
-                        print(f"Realism score: {realism_score * 100:.1f}%")
-                        
-                        if realism_score >= 0.9:
-                            print("✅ Realism score is 90% or higher")
+                    # Check match status
+                    if 'status' in match:
+                        valid_statuses = ['scheduled', 'live', 'finished']
+                        if match.get('status') in valid_statuses:
+                            print(f"✅ Match has valid status: {match.get('status')}")
                         else:
-                            print(f"⚠️ Realism score is below 90%: {realism_score * 100:.1f}%")
+                            print(f"❌ Match has invalid status: {match.get('status')}")
+                            success = False
+                    else:
+                        print("❌ Match is missing status field")
+                        success = False
+                        
+                    # Check if match time is real (not modified)
+                    match_time = match.get('match_time')
+                    if match_time:
+                        try:
+                            match_date = datetime.fromisoformat(match_time.replace('Z', '+00:00'))
+                            print(f"✅ Match has valid UTC/GMT time: {match_time}")
+                        except (ValueError, TypeError):
+                            print(f"❌ Match has invalid time format: {match_time}")
+                            success = False
+                    else:
+                        print("❌ Match is missing match_time field")
+                        success = False
             
             # Calculate overall realism percentage
             if match_count > 0:
