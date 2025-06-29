@@ -8,13 +8,18 @@ const LogoService = require('../services/logoService');
 const matchParser = new RealMatchParser();
 const logoService = new LogoService();
 
-// Get today's matches grouped by sport
+// Get today's matches grouped by sport (only baseball and hockey)
 router.get('/matches/today', async (req, res) => {
   try {
     const matches = await matchParser.getTodayMatches();
     
+    // Filter to only include baseball and hockey matches
+    const filteredMatches = matches.filter(match => 
+      match.sport === 'baseball' || match.sport === 'hockey'
+    );
+    
     // Group matches by sport
-    const groupedMatches = matches.reduce((acc, match) => {
+    const groupedMatches = filteredMatches.reduce((acc, match) => {
       if (!acc[match.sport]) {
         acc[match.sport] = [];
       }
@@ -25,7 +30,7 @@ router.get('/matches/today', async (req, res) => {
     res.json({
       success: true,
       matches: groupedMatches,
-      total: matches.length,
+      total: filteredMatches.length,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
