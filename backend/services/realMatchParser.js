@@ -140,6 +140,11 @@ class RealMatchParser {
 
     if (apiName === 'football' && this.apis.football.key) {
       headers['X-Auth-Token'] = this.apis.football.key;
+    } else if (apiName === 'footballAPI' && this.apis.footballAPI.key) {
+      headers['X-RapidAPI-Key'] = this.apis.footballAPI.key;
+      headers['X-RapidAPI-Host'] = 'v3.football.api-sports.io';
+    } else if (apiName === 'hockeyBall' && this.apis.hockeyBall.key) {
+      headers['Authorization'] = `Bearer ${this.apis.hockeyBall.key}`;
     } else if (apiName === 'esports' && this.apis.esports.key) {
       headers['Authorization'] = `Bearer ${this.apis.esports.key}`;
     }
