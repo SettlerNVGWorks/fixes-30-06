@@ -19,6 +19,21 @@ class RealMatchParser {
         url: 'https://api.football-data.org/v4',
         key: process.env.FOOTBALL_DATA_KEY || '', // Free tier
         rateLimit: 10 // per minute
+      },
+      baseball: {
+        url: 'https://statsapi.mlb.com/api/v1',
+        key: null, // Free API, no key needed
+        rateLimit: 50 // per minute
+      },
+      hockey: {
+        url: 'https://www.thesportsdb.com/api/v1/json',
+        key: process.env.SPORTSDB_KEY || '1', // Test key
+        rateLimit: 30 // per minute
+      },
+      esports: {
+        url: 'https://api.pandascore.co',
+        key: process.env.PANDASCORE_KEY || '', // Free tier
+        rateLimit: 10 // per minute on free tier
       }
     };
 
@@ -30,21 +45,24 @@ class RealMatchParser {
       },
       'hockey': {
         odds_api: 'icehockey_nhl',
-        alternative: 'KHL' // Russian Hockey League
+        sportsdb: 'NHL'
       },
       'baseball': {
         odds_api: 'baseball_mlb',
-        alternative: 'MLB'
+        mlb_api: 'mlb'
       },
       'esports': {
         odds_api: 'esports_lol', // League of Legends
-        alternative: 'CSGO'
+        pandascore: ['lol', 'cs-go', 'dota2']
       }
     };
 
     this.lastApiCalls = {
       odds: 0,
-      football: 0
+      football: 0,
+      baseball: 0,
+      hockey: 0,
+      esports: 0
     };
   }
 
