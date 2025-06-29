@@ -61,6 +61,88 @@ const TodayMatches = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Format match time from UTC/GMT to HH:MM format for Moscow timezone
+  const formatMatchTime = (matchTime) => {
+    try {
+      const date = new Date(matchTime);
+      // Convert to Moscow timezone (UTC+3)
+      const moscowTime = new Date(date.getTime() + (3 * 60 * 60 * 1000));
+      return moscowTime.toTimeString().slice(0, 5); // Get HH:MM format
+    } catch (error) {
+      return '??:??';
+    }
+  };
+
+  // Get color class for odds based on value
+  const getOddsColor = (odds) => {
+    const oddsValue = parseFloat(odds);
+    if (oddsValue <= 1.5) return 'text-green-400'; // Low odds - green
+    if (oddsValue <= 2.5) return 'text-yellow-400'; // Medium odds - yellow
+    return 'text-red-400'; // High odds - red
+  };
+
+  // Get match status with appropriate styling
+  const getMatchStatus = (match) => {
+    const now = new Date();
+    const matchTime = new Date(match.match_time);
+    const timeDiff = matchTime.getTime() - now.getTime();
+    const minutesDiff = timeDiff / (1000 * 60);
+
+    // Check if match has explicit status
+    if (match.status) {
+      switch (match.status.toLowerCase()) {
+        case 'live':
+        case 'live_match':
+          return {
+            text: 'ИДЁТ МАТЧ',
+            icon: '🔴',
+            color: 'text-red-300',
+            bgColor: 'bg-red-500/20 border border-red-500/50'
+          };
+        case 'finished':
+        case 'completed':
+          return {
+            text: 'ЗАВЕРШЁН',
+            icon: '✅',
+            color: 'text-gray-300',
+            bgColor: 'bg-gray-500/20 border border-gray-500/50'
+          };
+        case 'scheduled':
+        default:
+          return {
+            text: 'ЗАПЛАНИРОВАН',
+            icon: '⏰',
+            color: 'text-blue-300',
+            bgColor: 'bg-blue-500/20 border border-blue-500/50'
+          };
+      }
+    }
+
+    // Fallback: determine status based on time
+    if (minutesDiff < -120) { // More than 2 hours passed
+      return {
+        text: 'ЗАВЕРШЁН',
+        icon: '✅',
+        color: 'text-gray-300',
+        bgColor: 'bg-gray-500/20 border border-gray-500/50'
+      };
+    } else if (minutesDiff >= -120 && minutesDiff <= 120) { // Within 2 hours
+      return {
+        text: 'ВОЗМОЖНО ИДЁТ',
+        icon: '🟡',
+        color: 'text-orange-300',
+        bgColor: 'bg-orange-500/20 border border-orange-500/50'
+      };
+    } else {
+      return {
+        text: 'ЗАПЛАНИРОВАН',
+        icon: '⏰',
+        color: 'text-blue-300',
+        bgColor: 'bg-blue-500/20 border border-blue-500/50'
+      };
+    }
+  };
+
   if (loading) {
     return (
       <section className="py-16 bg-gradient-to-b from-gray-800 to-gray-900">
