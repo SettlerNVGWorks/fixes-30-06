@@ -7,13 +7,8 @@ const TodayMatches = () => {
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Sport icons and names mapping
+  // Sport icons and names mapping - only baseball and hockey
   const sportsInfo = {
-    football: {
-      name: 'Футбол',
-      icon: '⚽',
-      color: 'from-green-500 to-green-700'
-    },
     baseball: {
       name: 'Бейсбол',
       icon: '⚾',
@@ -23,11 +18,6 @@ const TodayMatches = () => {
       name: 'Хоккей',
       icon: '🏒',
       color: 'from-purple-500 to-purple-700'
-    },
-    esports: {
-      name: 'Киберспорт',
-      icon: '🎮',
-      color: 'from-red-500 to-red-700'
     }
   };
 
