@@ -864,6 +864,16 @@ class RealMatchParser {
         }
       }
 
+      // Try new BALLDONTLIE NHL API as priority alternative
+      if (this.canMakeApiCall('hockeyBall') && this.apis.hockeyBall.key) {
+        matches = await this.parseFromBallDontLieNHL();
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} hockey matches from BALLDONTLIE NHL API`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
+        }
+      }
+
       // Try TheSportsDB as backup
       if (this.canMakeApiCall('hockeyBackup')) {
         matches = await this.parseFromSportsDB();
