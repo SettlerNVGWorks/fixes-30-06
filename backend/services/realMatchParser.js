@@ -1053,13 +1053,20 @@ class RealMatchParser {
         match.match_date = this.getTodayString().iso;
         match.prediction = this.generatePrediction(match);
         match.id = this.generateMatchId(match);
+        // Add realism score for tracking
+        match.realism_score = this.calculateRealismScore(match);
       }
       
-      console.log(`✅ Successfully parsed ${allMatches.length} real matches (limited to 2 per sport):`);
-      console.log(`   ⚽ Футбол: ${limitedFootball.length}`);
-      console.log(`   ⚾ Бейсбол: ${limitedBaseball.length}`);
-      console.log(`   🏒 Хоккей: ${limitedHockey.length}`);
-      console.log(`   🎮 Киберспорт: ${limitedEsports.length}`);
+      // Calculate overall realism percentage
+      const totalRealism = allMatches.reduce((sum, match) => sum + match.realism_score, 0);
+      const realismPercentage = Math.round((totalRealism / allMatches.length) * 100);
+      
+      console.log(`✅ Successfully parsed ${allMatches.length} matches (limited to 2 per sport):`);
+      console.log(`   ⚽ Футбол: ${limitedFootball.length} (${this.getSourceType(limitedFootball)})`);
+      console.log(`   ⚾ Бейсбол: ${limitedBaseball.length} (${this.getSourceType(limitedBaseball)})`);
+      console.log(`   🏒 Хоккей: ${limitedHockey.length} (${this.getSourceType(limitedHockey)})`);
+      console.log(`   🎮 Киберспорт: ${limitedEsports.length} (${this.getSourceType(limitedEsports)})`);
+      console.log(`   📊 Общий процент реальности: ${realismPercentage}%`);
       
       this.setCacheData(cacheKey, allMatches);
       return allMatches;
