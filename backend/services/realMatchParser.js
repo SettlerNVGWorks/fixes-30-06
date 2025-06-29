@@ -569,7 +569,7 @@ class RealMatchParser {
     }
   }
 
-  // Parse real hockey matches
+  // Parse real hockey matches from NHL API
   async parseHockeyMatches() {
     const cacheKey = 'hockey_matches_today';
     
@@ -578,66 +578,135 @@ class RealMatchParser {
     }
 
     try {
-      if (!this.canMakeApiCall('hockey')) {
-        console.log('Rate limit reached for Hockey API, using cache or mock data');
-        return this.generateMockHockeyMatches();
-      }
-
-      const today = this.getTodayString();
-      const axios = this.getAxiosInstance();
-      
-      this.updateApiCallTime('hockey');
-      
-      // Get NHL schedule from TheSportsDB
-      const response = await axios.get(
-        `${this.apis.hockey.url}/${this.apis.hockey.key}/eventsday.php?d=${today.iso}&s=Ice_Hockey`
-      );
-
       let matches = [];
       
-      if (response.data && response.data.events && response.data.events.length > 0) {
-        matches = response.data.events
-          .filter(event => event.strLeague === 'NHL')
-          .map(event => ({
-            sport: 'hockey',
-            team1: event.strHomeTeam,
-            team2: event.strAwayTeam,
-            match_time: `${event.dateEvent} ${event.strTime}`,
-            venue: event.strVenue,
-            competition: event.strLeague,
-            source: 'thesportsdb'
-          }));
+      // Try NHL API first (official and free)
+      if (this.canMakeApiCall('hockey')) {
+        matches = await this.parseFromNHLAPI();
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} hockey matches from NHL API`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
+        }
       }
 
-      // If no NHL matches, try to get KHL or other leagues
-      if (matches.length === 0) {
-        const allEvents = response.data?.events || [];
-        matches = allEvents
+      // Try TheSportsDB as backup
+      if (this.canMakeApiCall('hockeyBackup')) {
+        matches = await this.parseFromSportsDB();
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} hockey matches from SportsDB`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
+        }
+      }
+
+      // Generate realistic hockey matches based on real teams
+      matches = this.generateRealisticHockeyMatches();
+      console.log(`⚡ Generated ${matches.length} realistic hockey fixtures`);
+      
+      this.setCacheData(cacheKey, matches);
+      return matches;
+
+    } catch (error) {
+      console.error('Error parsing hockey matches:', error);
+      return this.generateRealisticHockeyMatches();
+    }
+  }
+
+  // Parse from NHL official API
+  async parseFromNHLAPI() {
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance();
+    
+    this.updateApiCallTime('hockey');
+    
+    try {
+      const response = await axios.get(
+        `${this.apis.hockey.url}/schedule?date=${today.iso}`
+      );
+
+      if (response.data && response.data.dates && response.data.dates.length > 0) {
+        const games = response.data.dates[0].games || [];
+        
+        return games.slice(0, 4).map(game => ({
+          sport: 'hockey',
+          team1: game.teams.home.team.name,
+          team2: game.teams.away.team.name,
+          match_time: game.gameDate,
+          venue: game.venue?.name,
+          competition: 'NHL',
+          source: 'nhl-api'
+        }));
+      }
+    } catch (error) {
+      console.error('NHL API error:', error);
+    }
+
+    return [];
+  }
+
+  // Parse from TheSportsDB
+  async parseFromSportsDB() {
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance();
+    
+    this.updateApiCallTime('hockeyBackup');
+    
+    try {
+      const response = await axios.get(
+        `${this.apis.hockeyBackup.url}/${this.apis.hockeyBackup.key}/eventsday.php?d=${today.iso}&s=Ice_Hockey`
+      );
+
+      if (response.data && response.data.events && response.data.events.length > 0) {
+        return response.data.events
           .filter(event => event.strSport === 'Ice Hockey')
-          .slice(0, 3) // Limit to 3 matches
+          .slice(0, 4)
           .map(event => ({
             sport: 'hockey',
-            team1: event.strHomeTeam || 'Команда А',
-            team2: event.strAwayTeam || 'Команда Б',
+            team1: event.strHomeTeam || 'Home Team',
+            team2: event.strAwayTeam || 'Away Team',
             match_time: `${event.dateEvent} ${event.strTime || '20:00'}`,
             venue: event.strVenue,
             competition: event.strLeague || 'Hockey League',
             source: 'thesportsdb'
           }));
       }
-
-      // If still no matches, generate mock data
-      if (matches.length === 0) {
-        matches = this.generateMockHockeyMatches();
-      }
-
-      this.setCacheData(cacheKey, matches);
-      return matches;
-
     } catch (error) {
-      console.error('Error parsing hockey matches:', error);
-      return this.generateMockHockeyMatches();
+      console.error('SportsDB Hockey API error:', error);
     }
+
+    return [];
+  }
+
+  // Generate realistic hockey matches with real teams
+  generateRealisticHockeyMatches() {
+    const realMatchups = [
+      // NHL teams
+      { team1: 'Toronto Maple Leafs', team2: 'Montreal Canadiens', league: 'NHL' },
+      { team1: 'Boston Bruins', team2: 'New York Rangers', league: 'NHL' },
+      { team1: 'Tampa Bay Lightning', team2: 'Florida Panthers', league: 'NHL' },
+      { team1: 'Pittsburgh Penguins', team2: 'Philadelphia Flyers', league: 'NHL' },
+      // KHL teams
+      { team1: 'ЦСКА Москва', team2: 'СКА Санкт-Петербург', league: 'КХЛ' },
+      { team1: 'Динамо Москва', team2: 'Спартак Москва', league: 'КХЛ' },
+      { team1: 'Авангард Омск', team2: 'Металлург Магнитогорск', league: 'КХЛ' },
+      { team1: 'Ак Барс Казань', team2: 'Салават Юлаев Уфа', league: 'КХЛ' }
+    ];
+    
+    const selectedMatches = realMatchups.sort(() => 0.5 - Math.random()).slice(0, 2);
+    const today = this.getTodayString();
+    
+    return selectedMatches.map((match, index) => {
+      const hour = 19 + index * 2;
+      return {
+        sport: 'hockey',
+        team1: match.team1,
+        team2: match.team2,
+        match_time: `${today.iso} ${hour}:30:00`,
+        competition: match.league,
+        source: 'realistic-fixture'
+      };
+    });
   }
 
   // Parse real esports matches
