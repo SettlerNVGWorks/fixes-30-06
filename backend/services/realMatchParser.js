@@ -1440,6 +1440,13 @@ class RealMatchParser {
       const totalRealism = allMatches.reduce((sum, match) => sum + match.realism_score, 0);
       const realismPercentage = Math.round((totalRealism / allMatches.length) * 100);
       
+      // Save matches to database and ensure all teams have logos
+      await this.saveMatchesToDatabase(allMatches);
+      
+      // Auto-update logos for any new teams
+      console.log('🎨 Auto-updating logos for teams...');
+      await this.logoService.updateLogosForNewTeams(allMatches);
+      
       console.log(`✅ Successfully parsed ${allMatches.length} REAL matches (limited to 2 per sport):`);
       console.log(`   ⚽ Футбол: ${limitedFootball.length} (${this.getSourceType(limitedFootball)})`);
       console.log(`   ⚾ Бейсбол: ${limitedBaseball.length} (${this.getSourceType(limitedBaseball)})`);
