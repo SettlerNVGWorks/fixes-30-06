@@ -201,6 +201,80 @@ router.get('/logos/all', async (req, res) => {
   }
 });
 
+// Clean up old logos
+router.post('/logos/cleanup', async (req, res) => {
+  try {
+    await logoService.cleanupOldLogos();
+    
+    res.json({
+      success: true,
+      message: 'Old logos cleaned up successfully'
+    });
+  } catch (error) {
+    console.error('Error cleaning up old logos:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cleanup old logos'
+    });
+  }
+});
+
+// Get logo statistics
+router.get('/logos/stats', async (req, res) => {
+  try {
+    const db = getDatabase();
+    
+    // Get logo stats by sport
+    const logoStats = await db.collection('team_logos').aggregate([
+      {
+        $group: {
+          _id: '$sport',
+          count: { $sum: 1 },
+          real_logos: {
+            $sum: {
+              $cond: [
+                { $not: { $regexMatch: { input: '$logo_url', regex: 'placeholder' } } },
+                1,
+                0
+              ]
+            }
+          },
+          placeholder_logos: {
+            $sum: {
+              $cond: [
+                { $regexMatch: { input: '$logo_url', regex: 'placeholder' } },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]).toArray();
+    
+    // Get total counts
+    const totalLogos = await db.collection('team_logos').countDocuments();
+    const realLogos = await db.collection('team_logos').countDocuments({
+      logo_url: { $not: { $regex: 'placeholder' } }
+    });
+    
+    res.json({
+      success: true,
+      total_logos: totalLogos,
+      real_logos: realLogos,
+      placeholder_logos: totalLogos - realLogos,
+      percentage_real: Math.round((realLogos / totalLogos) * 100),
+      by_sport: logoStats
+    });
+  } catch (error) {
+    console.error('Error getting logo stats:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get logo statistics'
+    });
+  }
+});
+
 // Get statistics
 router.get('/stats', async (req, res) => {
   try {
