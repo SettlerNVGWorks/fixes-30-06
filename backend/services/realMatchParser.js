@@ -1078,10 +1078,42 @@ class RealMatchParser {
     }
   }
 
-  // Generate unique match ID
-  generateMatchId(match) {
-    const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
-    return str.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  // Calculate realism score for a match (0.0 to 1.0)
+  calculateRealismScore(match) {
+    const source = match.source;
+    
+    // Real API sources get highest scores
+    if (source === 'mlb-statsapi') return 1.0; // 100% real
+    if (source === 'football-data-api') return 1.0; // 100% real
+    if (source === 'nhl-api') return 1.0; // 100% real
+    if (source === 'pandascore') return 1.0; // 100% real
+    if (source === 'free-football-api') return 0.9; // 90% real
+    if (source === 'thesportsdb') return 0.8; // 80% real
+    if (source === 'esports-tracker') return 0.8; // 80% real
+    
+    // Realistic fixtures get high scores (real teams, realistic schedules)
+    if (source === 'realistic-fixture') return 0.85; // 85% realistic
+    
+    // Fallback data gets lower scores
+    if (source === 'fallback') return 0.7; // 70% realistic
+    
+    return 0.5; // 50% for unknown sources
+  }
+
+  // Get source type description for logging
+  getSourceType(matches) {
+    if (matches.length === 0) return 'none';
+    
+    const sources = matches.map(m => m.source);
+    const realSources = ['mlb-statsapi', 'football-data-api', 'nhl-api', 'pandascore', 'free-football-api'];
+    
+    const realCount = sources.filter(s => realSources.includes(s)).length;
+    const realisticCount = sources.filter(s => s === 'realistic-fixture').length;
+    
+    if (realCount === matches.length) return 'REAL API';
+    if (realCount > 0) return `${realCount} REAL + ${matches.length - realCount} REALISTIC`;
+    if (realisticCount === matches.length) return 'REALISTIC';
+    return 'MIXED';
   }
 
   // Generate prediction based on odds and team data
