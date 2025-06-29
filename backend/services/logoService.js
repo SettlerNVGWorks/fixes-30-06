@@ -174,7 +174,7 @@ class LogoService {
         return directUrl;
       }
 
-      // Try multiple sources for unknown teams
+      // Try multiple API sources for unknown teams
       let logoUrl = await this.getLogoFromSportsDB(teamName, sport);
       
       if (!logoUrl) {
@@ -185,8 +185,9 @@ class LogoService {
         logoUrl = await this.getLogoFromLogoDev(teamName, sport);
       }
       
+      // If still no logo found, try advanced placeholder generation
       if (!logoUrl) {
-        logoUrl = this.generatePlaceholderLogo(teamName, sport);
+        logoUrl = await this.generateAdvancedLogo(teamName, sport);
       }
 
       // Save to database and cache
@@ -197,7 +198,7 @@ class LogoService {
 
     } catch (error) {
       console.error(`Error getting logo for ${teamName}:`, error);
-      return this.generatePlaceholderLogo(teamName, sport);
+      return await this.generateAdvancedLogo(teamName, sport);
     }
   }
 
