@@ -1,0 +1,16 @@
+{
+  "name": "telegram-bot-integration",
+  "version": "1.0.0",
+  "description": "Integrated Telegram bot for website authentication",
+  "main": "telegram_bot_integrated.js",
+  "scripts": {
+    "start": "node telegram_bot_integrated.js",
+    "dev": "nodemon telegram_bot_integrated.js"
+  },
+  "dependencies": {
+    "telegraf": "^4.15.6",
+    "axios": "^1.6.7",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.1"
+  }
+}
