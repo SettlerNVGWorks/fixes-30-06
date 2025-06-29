@@ -571,6 +571,42 @@ class RealMatchParser {
     return [];
   }
 
+  // Parse from Free Football API
+  async parseFromFreeFootballAPI() {
+    const today = this.getTodayString();
+    const axios = this.getAxiosInstance();
+    
+    this.updateApiCallTime('footballFree');
+    
+    try {
+      const response = await axios.get(
+        `${this.apis.footballFree.url}/fixtures`,
+        {
+          params: {
+            date: today.iso
+          }
+        }
+      );
+
+      if (response.data && response.data.data && response.data.data.length > 0) {
+        return response.data.data.slice(0, 4).map(match => ({
+          sport: 'football',
+          team1: match.homeTeam?.name || match.home_team,
+          team2: match.awayTeam?.name || match.away_team,
+          match_time: match.date || match.fixture_date,
+          competition: match.league?.name || 'Football League',
+          source: 'free-football-api',
+          logo_team1: this.getTeamLogoUrl(match.homeTeam?.name || match.home_team, 'football'),
+          logo_team2: this.getTeamLogoUrl(match.awayTeam?.name || match.away_team, 'football')
+        }));
+      }
+    } catch (error) {
+      console.error('Free Football API error:', error);
+    }
+
+    return [];
+  }
+
   // Generate realistic football matches based on current leagues
   generateRealisticFootballMatches() {
     const realTeams = [
