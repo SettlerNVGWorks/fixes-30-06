@@ -506,6 +506,10 @@ test_plan:
     - "Update registration form with telegram tag emphasis"
     - "Authentication routes (register, login, logout, profile, change password)"
     - "Implement Today's Matches section on homepage"
+    - "Update match scheduling system to 09:00 and 19:00 MSK"
+    - "Automatic Logo Fetching"
+    - "Logo Management APIs"
+    - "Enhanced Time Parsing"
   stuck_tasks:
     - "Implement Today's Matches section on homepage"
   test_all: false
