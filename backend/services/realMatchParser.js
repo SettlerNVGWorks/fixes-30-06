@@ -475,7 +475,7 @@ class RealMatchParser {
               match_time: `${this.getTodayString().iso} ${19 + Math.floor(Math.random() * 3)}:00:00`, // Schedule for today evening
               competition: match.competition.name + ` (${dayOffset} day${dayOffset > 1 ? 's' : ''} ahead)`,
               source: 'football-data-api-future',
-              logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
+              logo_team1: this.getTeamLogoUrl(match.homeTeam.name, 'football'),
               logo_team2: this.getTeamLogo(match.awayTeam.name, 'football'),
               original_date: match.utcDate
             }));
