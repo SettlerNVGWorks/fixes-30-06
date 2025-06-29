@@ -581,6 +581,108 @@ class LogoService {
     }
   }
 
+  // Auto-update logos for new teams (called when new matches are parsed)
+  async updateLogosForNewTeams(newMatches) {
+    try {
+      const db = getDatabase();
+      const newTeams = new Set();
+      
+      // Extract unique teams from new matches
+      for (const match of newMatches) {
+        if (match.team1 && match.sport) {
+          newTeams.add(`${match.team1}|${match.sport}`);
+        }
+        if (match.team2 && match.sport) {
+          newTeams.add(`${match.team2}|${match.sport}`);
+        }
+      }
+      
+      console.log(`🔍 Checking logos for ${newTeams.size} teams from new matches...`);
+      
+      for (const teamKey of newTeams) {
+        const [teamName, sport] = teamKey.split('|');
+        
+        // Check if we already have a logo for this team
+        const existingLogo = await db.collection('team_logos').findOne({
+          team_name: teamName,
+          sport: sport
+        });
+        
+        if (!existingLogo) {
+          console.log(`🆕 New team detected: ${teamName} (${sport}), fetching logo...`);
+          await this.getTeamLogo(teamName, sport);
+          // Small delay to avoid overwhelming services
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+      
+      console.log(`✅ Logo check completed for new teams`);
+    } catch (error) {
+      console.error(`❌ Error updating logos for new teams:`, error);
+    }
+  }
+
+  // Clean up old logos (remove logos for teams that no longer have matches)
+  async cleanupOldLogos() {
+    try {
+      const db = getDatabase();
+      
+      // Get all teams currently in matches
+      const currentTeams = await db.collection('matches').aggregate([
+        {
+          $group: {
+            _id: null,
+            teams: {
+              $addToSet: {
+                $map: {
+                  input: [
+                    { name: '$team1', sport: '$sport' },
+                    { name: '$team2', sport: '$sport' }
+                  ],
+                  as: 'team',
+                  in: { 
+                    team_name: '$$team.name', 
+                    sport: '$$team.sport' 
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]).toArray();
+      
+      if (currentTeams.length > 0) {
+        const flatCurrentTeams = currentTeams[0].teams.flat();
+        
+        // Get all logos in database
+        const allLogos = await db.collection('team_logos').find({}).toArray();
+        
+        // Find logos that don't match any current teams
+        const logosToDelete = allLogos.filter(logo => 
+          !flatCurrentTeams.some(team => 
+            team.team_name === logo.team_name && team.sport === logo.sport
+          )
+        );
+        
+        if (logosToDelete.length > 0) {
+          console.log(`🧹 Cleaning up ${logosToDelete.length} old team logos...`);
+          
+          for (const logo of logosToDelete) {
+            await db.collection('team_logos').deleteOne({
+              _id: logo._id
+            });
+          }
+          
+          console.log(`✅ Cleaned up old logos`);
+        } else {
+          console.log(`✅ No old logos to clean up`);
+        }
+      }
+    } catch (error) {
+      console.error(`❌ Error cleaning up old logos:`, error);
+    }
+  }
+
   // Get logo with database check first
   async getTeamLogoWithDatabase(teamName, sport) {
     // Try database first
