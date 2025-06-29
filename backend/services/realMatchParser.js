@@ -313,9 +313,21 @@ class RealMatchParser {
     return sportRecommendations[match.sport] || `🎯 ПРИОРИТЕТ: Рассмотрите альтернативные рынки - исход матча непредсказуем!`;
   }
 
-  // Team logos mapping using comprehensive database
-  getTeamLogoUrl(teamName, sport) {
-    return getTeamLogo(teamName, sport);
+  // Team logos mapping using comprehensive database and auto-fetch service
+  async getTeamLogoUrl(teamName, sport) {
+    try {
+      // Try new logo service first (with auto-fetch)
+      const logoUrl = await this.logoService.getTeamLogoWithDatabase(teamName, sport);
+      if (logoUrl) {
+        return logoUrl;
+      }
+      
+      // Fallback to static mapping
+      return getTeamLogo(teamName, sport);
+    } catch (error) {
+      console.error(`Error getting logo for ${teamName}:`, error);
+      return getTeamLogo(teamName, sport);
+    }
   }
   generateMatchId(match) {
     const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
