@@ -214,26 +214,65 @@ backend:
         agent: "main"
         comment: "✅ TESTED: /api/stats and /api/predictions endpoints working. Sample data seeded correctly."
         
-  - task: "Improve match parsing system for all sports"
+  - task: "Update match scheduling system to 09:00 and 19:00 MSK"
     implemented: true
     working: true
-    file: "services/realMatchParser.js, services/scheduler.js"
+    file: "services/scheduler.js"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
-        comment: "Fixed bugs: removed PostgreSQL code, switched fully to MongoDB"
-      - working: "NA"
-        agent: "main"
-        comment: "Added real parsing for all sports: Football (Football-Data API), Baseball (MLB StatsAPI), Hockey (TheSportsDB), Esports (PandaScore mock)"
-      - working: "NA"
-        agent: "main"
-        comment: "Improved scheduler to use real parsing instead of mock generation"
+        comment: "Updated scheduler to run at 09:00 and 19:00 MSK instead of 12:00 MSK"
       - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Schedule correctly set for 09:00 МСК (morning) and 19:00 МСК (evening). The /api/matches/schedule-info endpoint returns the updated schedule information. All tests passed."
+        
+  - task: "Implement real API data only (no mock data)"
+    implemented: true
+    working: true
+    file: "services/realMatchParser.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
         agent: "main"
-        comment: "✅ TESTED: All sports parsing working. 21 matches parsed (football: 2, baseball: 15, hockey: 2, esports: 2). Scheduler works at 12:00 МСК. Force refresh and daily update endpoints functional."
+        comment: "Modified realMatchParser.js to only use real API data and not generate mock data as fallback"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: System correctly returns only real API data. No mock data is generated. The real_api_source flag is set in the database but not returned in the API response. All tests passed."
+        
+  - task: "Add match status system (scheduled/live/finished)"
+    implemented: true
+    working: true
+    file: "services/scheduler.js, services/realMatchParser.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added match status system with three states: scheduled, live, and finished"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Match status system works correctly. All matches have a valid status (scheduled, live, or finished). Status is determined based on real match time. All tests passed."
+        
+  - task: "Use real match times from APIs"
+    implemented: true
+    working: true
+    file: "services/realMatchParser.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modified realMatchParser.js to use real match times from APIs instead of generating times"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: System correctly uses real match times from APIs. All match times are in valid UTC/GMT format. No time modification is performed. All tests passed."
 
 frontend:
   - task: "Move account button next to hamburger button"
