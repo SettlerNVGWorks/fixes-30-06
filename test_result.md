@@ -373,7 +373,7 @@ frontend:
         
   - task: "Implement Today's Matches section on homepage"
     implemented: true
-    working: false
+    working: true
     file: "src/components/TodayMatches.js"
     stuck_count: 1
     priority: "high"
