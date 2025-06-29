@@ -86,8 +86,10 @@ class RealMatchParser {
     this.lastApiCalls = {
       odds: 0,
       football: 0,
+      footballAPI: 0,
       baseball: 0,
       hockey: 0,
+      hockeyBall: 0,
       esports: 0
     };
   }
