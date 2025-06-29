@@ -171,7 +171,7 @@ const TodayMatches = () => {
             <div className="bg-red-600/20 border border-red-500 rounded-lg p-4 max-w-md mx-auto">
               <p className="text-red-300">{error}</p>
               <p className="text-xs text-gray-400 mt-2">
-                Матчи обновляются 2 раза в день: 09:00 и 19:00 МСК (только реальные данные)
+                Матчи обновляются 2 раза в день: 09:00 и 19:00 МСК
               </p>
             </div>
           </div>
