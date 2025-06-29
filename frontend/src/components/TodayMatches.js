@@ -243,15 +243,19 @@ const TodayMatches = () => {
                       <div className="flex items-center justify-between mb-4">
                         <div className="text-center flex-1">
                           <div className="flex items-center justify-center space-x-3 mb-2">
-                            {match.logo_team1 && (
+                            {match.logo_team1 ? (
                               <img 
                                 src={match.logo_team1} 
                                 alt={match.team1}
-                                className="w-8 h-8 rounded-full object-contain"
+                                className="w-8 h-8 rounded-full object-contain bg-white/10 p-1"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                 }}
                               />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
+                                {match.team1.charAt(0).toUpperCase()}
+                              </div>
                             )}
                             <div className="text-lg font-semibold text-white">
                               {match.team1}
@@ -262,15 +266,19 @@ const TodayMatches = () => {
                             <div className="text-lg font-semibold text-white">
                               {match.team2}
                             </div>
-                            {match.logo_team2 && (
+                            {match.logo_team2 ? (
                               <img 
                                 src={match.logo_team2} 
                                 alt={match.team2}
-                                className="w-8 h-8 rounded-full object-contain"
+                                className="w-8 h-8 rounded-full object-contain bg-white/10 p-1"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                 }}
                               />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-red-700 flex items-center justify-center text-white text-xs font-bold">
+                                {match.team2.charAt(0).toUpperCase()}
+                              </div>
                             )}
                           </div>
                         </div>
