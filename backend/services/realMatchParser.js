@@ -1650,9 +1650,9 @@ class RealMatchParser {
       match.match_date = this.getTodayString().iso;
       match.prediction = this.generatePrediction(match);
       match.id = this.generateMatchId(match);
-      // Add team logos
-      match.logo_team1 = this.getTeamLogoUrl(match.team1, match.sport);
-      match.logo_team2 = this.getTeamLogoUrl(match.team2, match.sport);
+      // Add team logos (await async function)
+      match.logo_team1 = await this.getTeamLogoUrl(match.team1, match.sport);
+      match.logo_team2 = await this.getTeamLogoUrl(match.team2, match.sport);
     }
     
     return fallbackMatches;
