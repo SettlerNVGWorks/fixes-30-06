@@ -359,9 +359,6 @@ const TodayMatches = () => {
             <span className="text-green-400">✅</span>
             <span className="text-green-300 text-sm font-medium">100% реальные данные из официальных API</span>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
-            Обновления: 09:00 и 19:00 МСК | Без мок-данных
-          </p>
         </div>
       </div>
     </section>
