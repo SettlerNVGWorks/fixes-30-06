@@ -21,6 +21,11 @@ class RealMatchParser {
         key: process.env.FOOTBALL_DATA_KEY || '',
         rateLimit: 10
       },
+      footballAPI: {
+        url: 'https://v3.football.api-sports.io',
+        key: process.env.API_FOOTBALL_KEY || '',
+        rateLimit: 100 // 100 requests per day on free tier
+      },
       footballFree: {
         url: 'https://www.freefootballapi.com/api',
         key: null, // Free API, no key needed
@@ -35,6 +40,11 @@ class RealMatchParser {
         url: 'https://statsapi.web.nhl.com/api/v1',
         key: null, // Free official NHL API
         rateLimit: 30
+      },
+      hockeyBall: {
+        url: 'https://nhl.balldontlie.io/v1',
+        key: process.env.BALLDONTLIE_API_KEY || '',
+        rateLimit: 5 // 5 requests per minute on free tier
       },
       hockeyBackup: {
         url: 'https://www.thesportsdb.com/api/v1/json',
