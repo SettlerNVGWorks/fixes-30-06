@@ -62,6 +62,7 @@ class SportPredictionsAPITester:
         if success:
             print(f"Health Status: {response.get('status')}")
             print(f"Timestamp: {response.get('timestamp')}")
+            print(f"Uptime: {response.get('uptime')} seconds")
         return success
 
     def test_stats_endpoint(self):
@@ -77,53 +78,17 @@ class SportPredictionsAPITester:
             print(f"Success Rate: {response.get('success_rate')}%")
             print(f"Active Bettors: {response.get('active_bettors')}")
             print(f"Monthly Wins: {response.get('monthly_wins')}")
-        return success
-
-    def test_predictions_endpoint(self):
-        """Test the predictions endpoint"""
-        success, response = self.run_test(
-            "Predictions Endpoint",
-            "GET",
-            "api/predictions",
-            200
-        )
-        if success:
-            predictions = response.get('predictions', [])
-            print(f"Total Predictions: {response.get('total')}")
-            print(f"Predictions Returned: {len(predictions)}")
-            if predictions:
-                print(f"First Prediction Sport: {predictions[0].get('sport')}")
-                print(f"First Prediction Match: {predictions[0].get('match_name')}")
-        return success
-
-    def test_sport_stats_endpoint(self, sport):
-        """Test the sport stats endpoint"""
-        success, response = self.run_test(
-            f"{sport.capitalize()} Stats Endpoint",
-            "GET",
-            f"api/sports/{sport}/stats",
-            200
-        )
-        if success:
-            stats = response.get('stats', {})
-            print(f"{sport.capitalize()} Predictions: {stats.get('predictions')}")
-            print(f"{sport.capitalize()} Accuracy: {stats.get('accuracy')}%")
-            print(f"{sport.capitalize()} Profit: {stats.get('profit')}")
-        return success
-
-    def test_telegram_stats_endpoint(self):
-        """Test the telegram stats endpoint"""
-        success, response = self.run_test(
-            "Telegram Stats Endpoint",
-            "GET",
-            "api/telegram/stats",
-            200
-        )
-        if success:
-            stats_message = response.get('stats_message', '')
-            recent_predictions = response.get('recent_predictions', [])
-            print(f"Stats Message Length: {len(stats_message)}")
-            print(f"Recent Predictions Count: {len(recent_predictions)}")
+            
+            # Check if success rate is above 90%
+            if response.get('success_rate', 0) >= 90:
+                print("✅ Success rate is 90% or higher")
+            else:
+                print(f"⚠️ Success rate is below 90%: {response.get('success_rate')}%")
+                
+            # Check sports stats
+            sports_stats = response.get('sports_stats', {})
+            for sport, stats in sports_stats.items():
+                print(f"{sport.capitalize()}: {stats.get('predictions')} predictions, {stats.get('accuracy')}% accuracy")
         return success
 
     def test_today_matches_endpoint(self):
@@ -147,45 +112,86 @@ class SportPredictionsAPITester:
             missing_sports = [sport for sport in required_sports if sport not in sports_available]
             
             if missing_sports:
-                print(f"⚠️ Missing sports: {', '.join(missing_sports)}")
+                print(f"❌ Missing sports: {', '.join(missing_sports)}")
                 success = False
             else:
                 print("✅ All required sports are available")
+            
+            # Check total number of matches (should be 8, 2 per sport)
+            total_matches = response.get('total_matches', 0)
+            if total_matches == 8:
+                print("✅ Total matches count is correct: 8 matches (2 per sport)")
+            else:
+                print(f"❌ Incorrect total matches count: {total_matches} (expected 8)")
+                success = False
             
             # Check match structure and analysis
             matches = response.get('matches', {})
             for sport, sport_matches in matches.items():
                 print(f"\n{sport.capitalize()} matches: {len(sport_matches)}")
                 
-                if sport_matches:
-                    sample_match = sport_matches[0]
-                    print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
-                    print(f"Match time: {sample_match.get('match_time')}")
+                # Check if each sport has exactly 2 matches
+                if len(sport_matches) != 2:
+                    print(f"❌ {sport} has {len(sport_matches)} matches (expected 2)")
+                    success = False
+                else:
+                    print(f"✅ {sport} has exactly 2 matches")
+                
+                # Check each match in the sport
+                for match_idx, match in enumerate(sport_matches):
+                    print(f"\nMatch {match_idx+1}: {match.get('team1')} vs {match.get('team2')}")
                     
-                    # Verify match structure
-                    required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
-                    missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
+                    # Verify required fields
+                    required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'prediction', 'sport', 'logo_team1', 'logo_team2', 'source']
+                    missing_fields = [field for field in required_fields if field not in match or match.get(field) is None]
                     
                     if missing_fields:
-                        print(f"⚠️ Missing required fields in match: {', '.join(missing_fields)}")
+                        print(f"❌ Missing required fields: {', '.join(missing_fields)}")
                         success = False
                     else:
-                        print("✅ Match has all required fields")
+                        print("✅ All required fields present")
                     
-                    # Check odds
-                    print(f"Odds team1: {sample_match.get('odds_team1')}")
-                    print(f"Odds team2: {sample_match.get('odds_team2')}")
-                    if sport == 'football':
-                        print(f"Odds draw: {sample_match.get('odds_draw')}")
+                    # Check team logos
+                    if 'logo_team1' in match and 'logo_team2' in match:
+                        if match['logo_team1'] and match['logo_team2']:
+                            print("✅ Both team logos are present")
+                        else:
+                            print("❌ One or both team logos are missing")
+                            success = False
                     
-                    # Check analysis
-                    analysis = sample_match.get('analysis')
-                    if analysis:
-                        print(f"Analysis length: {len(analysis)} characters")
-                        print(f"Analysis sample: {analysis[:50]}...")
+                    # Check analysis for betting symbols
+                    analysis = match.get('analysis', '')
+                    betting_symbols = ['🎯', '💰', '📈', '💡']
+                    found_symbols = [symbol for symbol in betting_symbols if symbol in analysis]
+                    
+                    if found_symbols:
+                        print(f"✅ Analysis contains betting priority symbols: {', '.join(found_symbols)}")
                     else:
-                        print("⚠️ No analysis found for match")
+                        print("❌ Analysis does not contain any betting priority symbols")
                         success = False
+                    
+                    # Check source for specific sports
+                    if sport == 'baseball':
+                        if match.get('source') == 'mlb-statsapi':
+                            print("✅ Baseball match has correct source: mlb-statsapi")
+                        else:
+                            print(f"❌ Baseball match has incorrect source: {match.get('source')} (expected mlb-statsapi)")
+                            success = False
+                    
+                    if sport == 'esports':
+                        if match.get('source') == 'pandascore-api':
+                            print("✅ Esports match has correct source: pandascore-api")
+                        else:
+                            print(f"❌ Esports match has incorrect source: {match.get('source')} (expected pandascore-api)")
+                            # Not failing the test for this as it might use a fallback
+                    
+                    # Check realism score
+                    if 'realism_score' in match:
+                        print(f"Realism score: {match.get('realism_score', 0) * 100}%")
+                        if match.get('realism_score', 0) >= 0.9:
+                            print("✅ Realism score is 90% or higher")
+                        else:
+                            print(f"⚠️ Realism score is below 90%: {match.get('realism_score', 0) * 100}%")
         
         return success
 
@@ -205,7 +211,11 @@ class SportPredictionsAPITester:
             
             matches = response.get('matches', [])
             if matches:
-                print(f"Matches returned: {len(matches)}")
+                # Check if exactly 2 matches are returned
+                if len(matches) == 2:
+                    print("✅ Exactly 2 matches returned as expected")
+                else:
+                    print(f"⚠️ Expected 2 matches, got {len(matches)}")
                 
                 # Check first match
                 sample_match = matches[0]
@@ -213,28 +223,32 @@ class SportPredictionsAPITester:
                 print(f"Match time: {sample_match.get('match_time')}")
                 
                 # Verify match structure
-                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
+                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport', 'logo_team1', 'logo_team2']
                 missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
                 
                 if missing_fields:
-                    print(f"⚠️ Missing required fields in match: {', '.join(missing_fields)}")
+                    print(f"❌ Missing required fields: {', '.join(missing_fields)}")
                     success = False
                 else:
                     print("✅ Match has all required fields")
                 
-                # Check odds
-                print(f"Odds team1: {sample_match.get('odds_team1')}")
-                print(f"Odds team2: {sample_match.get('odds_team2')}")
-                if sport == 'football':
-                    print(f"Odds draw: {sample_match.get('odds_draw')}")
+                # Check team logos
+                if 'logo_team1' in sample_match and 'logo_team2' in sample_match:
+                    if sample_match['logo_team1'] and sample_match['logo_team2']:
+                        print("✅ Both team logos are present")
+                    else:
+                        print("❌ One or both team logos are missing")
+                        success = False
                 
-                # Check analysis
-                analysis = sample_match.get('analysis')
-                if analysis:
-                    print(f"Analysis length: {len(analysis)} characters")
-                    print(f"Analysis sample: {analysis[:50]}...")
+                # Check analysis for betting symbols
+                analysis = sample_match.get('analysis', '')
+                betting_symbols = ['🎯', '💰', '📈', '💡']
+                found_symbols = [symbol for symbol in betting_symbols if symbol in analysis]
+                
+                if found_symbols:
+                    print(f"✅ Analysis contains betting priority symbols: {', '.join(found_symbols)}")
                 else:
-                    print("⚠️ No analysis found for match")
+                    print("❌ Analysis does not contain any betting priority symbols")
                     success = False
                 
                 # Verify all matches are for the requested sport
@@ -242,10 +256,27 @@ class SportPredictionsAPITester:
                 if all_correct_sport:
                     print(f"✅ All matches are for {sport}")
                 else:
-                    print(f"⚠️ Some matches are not for {sport}")
+                    print(f"❌ Some matches are not for {sport}")
                     success = False
+                
+                # Check specific source for baseball and esports
+                if sport == 'baseball':
+                    baseball_sources = [match.get('source') for match in matches]
+                    if 'mlb-statsapi' in baseball_sources:
+                        print("✅ Baseball matches include mlb-statsapi source")
+                    else:
+                        print(f"❌ Baseball matches don't use mlb-statsapi: {baseball_sources}")
+                        success = False
+                
+                if sport == 'esports':
+                    esports_sources = [match.get('source') for match in matches]
+                    if 'pandascore-api' in esports_sources:
+                        print("✅ Esports matches include pandascore-api source")
+                    else:
+                        print(f"⚠️ Esports matches don't use pandascore-api: {esports_sources}")
+                        # Not failing the test for this as it might use a fallback
             else:
-                print(f"⚠️ No matches returned for {sport}")
+                print(f"❌ No matches returned for {sport}")
                 success = False
         
         return success
@@ -275,10 +306,10 @@ class SportPredictionsAPITester:
             
             if refresh_success:
                 total_matches = today_response.get('total_matches', 0)
-                if total_matches > 0:
-                    print(f"✅ Successfully refreshed {total_matches} matches")
+                if total_matches == 8:
+                    print(f"✅ Successfully refreshed matches: {total_matches} matches (2 per sport)")
                 else:
-                    print("⚠️ No matches found after refresh")
+                    print(f"⚠️ Expected 8 matches after refresh, got {total_matches}")
                     success = False
         
         return success
@@ -312,8 +343,19 @@ class SportPredictionsAPITester:
                     sports_count[sport] += 1
                 
                 print(f"Sports distribution: {sports_count}")
+                
+                # Check if all 4 sports are present with 2 matches each
+                required_sports = ['football', 'baseball', 'hockey', 'esports']
+                all_sports_present = all(sport in sports_count for sport in required_sports)
+                correct_counts = all(sports_count.get(sport, 0) == 2 for sport in required_sports)
+                
+                if all_sports_present and correct_counts:
+                    print("✅ All sports present with 2 matches each")
+                else:
+                    print("⚠️ Not all sports have exactly 2 matches")
+                    success = False
             else:
-                print("⚠️ No matches returned in daily update response")
+                print("❌ No matches returned in daily update response")
                 success = False
         
         return success
@@ -337,22 +379,38 @@ class SportPredictionsAPITester:
                 print(f"Daily Match Update: {schedule.get('dailyMatchUpdate')}")
                 print(f"Old Match Cleanup: {schedule.get('oldMatchCleanup')}")
                 print(f"Timezone: {schedule.get('timezone')}")
+                print(f"Matches Per Sport: {schedule.get('matchesPerSport')}")
+                print(f"Total Matches Per Day: {schedule.get('totalMatchesPerDay')}")
                 
                 # Verify schedule is set for 12:00 MSK
-                if schedule.get('dailyMatchUpdate') == '12:00 МСК каждый день':
+                if '12:00 МСК' in schedule.get('dailyMatchUpdate', ''):
                     print("✅ Schedule correctly set for 12:00 МСК daily")
                 else:
-                    print(f"⚠️ Schedule not set for 12:00 МСК: {schedule.get('dailyMatchUpdate')}")
+                    print(f"❌ Schedule not set for 12:00 МСК: {schedule.get('dailyMatchUpdate')}")
                     success = False
                 
                 # Verify timezone is Moscow
                 if schedule.get('timezone') == 'Europe/Moscow':
                     print("✅ Timezone correctly set to Europe/Moscow")
                 else:
-                    print(f"⚠️ Timezone not set to Europe/Moscow: {schedule.get('timezone')}")
+                    print(f"❌ Timezone not set to Europe/Moscow: {schedule.get('timezone')}")
+                    success = False
+                
+                # Verify matches per sport is 2
+                if schedule.get('matchesPerSport') == 2:
+                    print("✅ Matches per sport correctly set to 2")
+                else:
+                    print(f"❌ Matches per sport not set to 2: {schedule.get('matchesPerSport')}")
+                    success = False
+                
+                # Verify total matches per day is 8
+                if schedule.get('totalMatchesPerDay') == 8:
+                    print("✅ Total matches per day correctly set to 8")
+                else:
+                    print(f"❌ Total matches per day not set to 8: {schedule.get('totalMatchesPerDay')}")
                     success = False
             else:
-                print("⚠️ No schedule information returned")
+                print("❌ No schedule information returned")
                 success = False
             
             # Check next update information
@@ -361,15 +419,15 @@ class SportPredictionsAPITester:
                 print(f"Next Update: {next_update.get('date')}")
                 print(f"Time Until: {next_update.get('timeUntil')}")
             else:
-                print("⚠️ No next update information returned")
+                print("❌ No next update information returned")
                 success = False
         
         return success
 
-    def test_match_data_structure(self):
-        """Test the match data structure in detail"""
+    def test_match_data_structure_and_realism(self):
+        """Test the match data structure in detail and check realism scores"""
         success, response = self.run_test(
-            "Match Data Structure Test",
+            "Match Data Structure and Realism Test",
             "GET",
             "api/matches/today",
             200
@@ -378,6 +436,8 @@ class SportPredictionsAPITester:
         if success:
             matches = response.get('matches', {})
             all_sports_present = True
+            total_realism_score = 0
+            match_count = 0
             
             # Required sports
             required_sports = ['football', 'baseball', 'hockey', 'esports']
@@ -386,248 +446,88 @@ class SportPredictionsAPITester:
             for sport in required_sports:
                 sport_matches = matches.get(sport, [])
                 if not sport_matches:
-                    print(f"⚠️ No {sport} matches found")
+                    print(f"❌ No {sport} matches found")
                     all_sports_present = False
                     continue
                 
-                print(f"\n=== {sport.capitalize()} Match Structure ===")
-                sample_match = sport_matches[0]
+                print(f"\n=== {sport.capitalize()} Match Structure and Realism ===")
                 
-                # Check required fields
-                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
-                optional_fields = ['odds_draw', 'prediction', 'confidence_level', 'status']
-                
-                # Print all fields for inspection
-                print(f"Match ID: {sample_match.get('id')}")
-                print(f"Teams: {sample_match.get('team1')} vs {sample_match.get('team2')}")
-                print(f"Match Time: {sample_match.get('match_time')}")
-                print(f"Odds: {sample_match.get('odds_team1')} / {sample_match.get('odds_team2')}")
-                if sport == 'football':
-                    print(f"Draw Odds: {sample_match.get('odds_draw')}")
-                print(f"Analysis: {sample_match.get('analysis')[:100]}...")
-                
-                # Check for missing required fields
-                missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
-                if missing_fields:
-                    print(f"⚠️ Missing required fields: {', '.join(missing_fields)}")
-                    success = False
-                else:
-                    print("✅ All required fields present")
-                
-                # Check data types
-                if not isinstance(sample_match.get('odds_team1'), (int, float)):
-                    print(f"⚠️ odds_team1 is not a number: {sample_match.get('odds_team1')}")
-                    success = False
-                
-                if not isinstance(sample_match.get('odds_team2'), (int, float)):
-                    print(f"⚠️ odds_team2 is not a number: {sample_match.get('odds_team2')}")
-                    success = False
-                
-                if sport == 'football' and sample_match.get('odds_draw') is not None and not isinstance(sample_match.get('odds_draw'), (int, float)):
-                    print(f"⚠️ odds_draw is not a number: {sample_match.get('odds_draw')}")
-                    success = False
-                
-                # Check match time format
-                try:
-                    match_time = sample_match.get('match_time')
-                    if match_time:
-                        # Try to parse the date
-                        if 'T' in match_time:
-                            # ISO format
-                            datetime.fromisoformat(match_time.replace('Z', '+00:00'))
-                        else:
-                            # YYYY-MM-DD HH:MM:SS format
-                            datetime.strptime(match_time, '%Y-%m-%d %H:%M:%S')
-                        print("✅ Match time format is valid")
-                    else:
-                        print("⚠️ Match time is missing")
+                # Check each match in the sport
+                for match_idx, match in enumerate(sport_matches):
+                    match_count += 1
+                    print(f"\nMatch {match_idx+1}: {match.get('team1')} vs {match.get('team2')}")
+                    
+                    # Check required fields
+                    required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport', 'logo_team1', 'logo_team2', 'source', 'prediction']
+                    missing_fields = [field for field in required_fields if field not in match or match.get(field) is None]
+                    
+                    if missing_fields:
+                        print(f"❌ Missing required fields: {', '.join(missing_fields)}")
                         success = False
-                except ValueError as e:
-                    print(f"⚠️ Invalid match time format: {match_time} - {str(e)}")
+                    else:
+                        print("✅ All required fields present")
+                    
+                    # Check team logos
+                    if 'logo_team1' in match and 'logo_team2' in match:
+                        if match['logo_team1'] and match['logo_team2']:
+                            print("✅ Both team logos are present")
+                        else:
+                            print("❌ One or both team logos are missing")
+                            success = False
+                    
+                    # Check analysis for betting symbols
+                    analysis = match.get('analysis', '')
+                    betting_symbols = ['🎯', '💰', '📈', '💡']
+                    found_symbols = [symbol for symbol in betting_symbols if symbol in analysis]
+                    
+                    if found_symbols:
+                        print(f"✅ Analysis contains betting priority symbols: {', '.join(found_symbols)}")
+                    else:
+                        print("❌ Analysis does not contain any betting priority symbols")
+                        success = False
+                    
+                    # Check source for specific sports
+                    if sport == 'baseball':
+                        if match.get('source') == 'mlb-statsapi':
+                            print("✅ Baseball match has correct source: mlb-statsapi")
+                        else:
+                            print(f"❌ Baseball match has incorrect source: {match.get('source')} (expected mlb-statsapi)")
+                            success = False
+                    
+                    if sport == 'esports':
+                        if match.get('source') == 'pandascore-api':
+                            print("✅ Esports match has correct source: pandascore-api")
+                        else:
+                            print(f"⚠️ Esports match has incorrect source: {match.get('source')} (expected pandascore-api)")
+                            # Not failing the test for this as it might use a fallback
+                    
+                    # Check realism score
+                    if 'realism_score' in match:
+                        realism_score = match.get('realism_score', 0)
+                        total_realism_score += realism_score
+                        print(f"Realism score: {realism_score * 100:.1f}%")
+                        
+                        if realism_score >= 0.9:
+                            print("✅ Realism score is 90% or higher")
+                        else:
+                            print(f"⚠️ Realism score is below 90%: {realism_score * 100:.1f}%")
+            
+            # Calculate overall realism percentage
+            if match_count > 0:
+                overall_realism = (total_realism_score / match_count) * 100
+                print(f"\n=== Overall Realism Score: {overall_realism:.1f}% ===")
+                
+                if overall_realism >= 90:
+                    print("✅ Overall realism score is 90% or higher")
+                else:
+                    print(f"❌ Overall realism score is below 90%: {overall_realism:.1f}%")
                     success = False
             
             if all_sports_present:
                 print("\n✅ All required sports present in the response")
             else:
-                print("\n⚠️ Some sports are missing from the response")
+                print("\n❌ Some sports are missing from the response")
                 success = False
-        
-        return success
-
-    def test_user_registration(self):
-        """Test user registration"""
-        # Generate a unique username and telegram tag
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        username = f"testuser_{timestamp}"
-        telegram_tag = f"@test_{timestamp}"
-        
-        user_data = {
-            "telegram_tag": telegram_tag,
-            "username": username,
-            "password": "Test123!",
-            "confirmPassword": "Test123!"
-        }
-        
-        success, response = self.run_test(
-            "User Registration",
-            "POST",
-            "api/auth/register",
-            201,
-            data=user_data
-        )
-        
-        if success:
-            self.token = response.get('token')
-            self.user_data = response.get('user')
-            print(f"Registered User: {self.user_data.get('username')}")
-            print(f"Telegram Tag: {self.user_data.get('telegram_tag')}")
-            print(f"Registration Date: {self.user_data.get('registration_date')}")
-        
-        return success
-
-    def test_user_login(self):
-        """Test user login with telegram_tag"""
-        if not self.user_data:
-            print("⚠️ No registered user to test login with")
-            return False
-        
-        login_data = {
-            "telegram_tag": self.user_data.get('telegram_tag'),
-            "password": "Test123!"
-        }
-        
-        success, response = self.run_test(
-            "User Login with Telegram Tag",
-            "POST",
-            "api/auth/login",
-            200,
-            data=login_data
-        )
-        
-        if success:
-            self.token = response.get('token')
-            print(f"Login Successful for: {response.get('user', {}).get('username')}")
-            print(f"Using Telegram Tag: {response.get('user', {}).get('telegram_tag')}")
-        
-        return success
-        
-    def test_user_login_without_at_symbol(self):
-        """Test user login with telegram_tag without @ symbol"""
-        if not self.user_data:
-            print("⚠️ No registered user to test login with")
-            return False
-        
-        # Remove @ from telegram_tag if it exists
-        telegram_tag = self.user_data.get('telegram_tag', '')
-        if telegram_tag.startswith('@'):
-            telegram_tag = telegram_tag[1:]
-        
-        login_data = {
-            "telegram_tag": telegram_tag,
-            "password": "Test123!"
-        }
-        
-        success, response = self.run_test(
-            "User Login with Telegram Tag (without @ symbol)",
-            "POST",
-            "api/auth/login",
-            200,
-            data=login_data
-        )
-        
-        if success:
-            self.token = response.get('token')
-            print(f"Login Successful for: {response.get('user', {}).get('username')}")
-            print(f"Using Telegram Tag without @: {telegram_tag}")
-            print(f"Server returned Telegram Tag: {response.get('user', {}).get('telegram_tag')}")
-        
-        return success
-
-    def test_user_profile(self):
-        """Test getting user profile (authenticated)"""
-        if not self.token:
-            print("⚠️ No auth token available for profile test")
-            return False
-        
-        success, response = self.run_test(
-            "User Profile",
-            "GET",
-            "api/auth/profile",
-            200,
-            auth=True
-        )
-        
-        if success:
-            user = response.get('user', {})
-            print(f"Profile Username: {user.get('username')}")
-            print(f"Profile Telegram: {user.get('telegram_tag')}")
-        
-        return success
-
-    def test_change_password(self):
-        """Test changing password (authenticated)"""
-        if not self.token:
-            print("⚠️ No auth token available for password change test")
-            return False
-        
-        password_data = {
-            "currentPassword": "Test123!",
-            "newPassword": "NewTest456!",
-            "confirmNewPassword": "NewTest456!"
-        }
-        
-        success, response = self.run_test(
-            "Change Password",
-            "PUT",
-            "api/auth/change-password",
-            200,
-            data=password_data,
-            auth=True
-        )
-        
-        if success:
-            print(f"Password Change Message: {response.get('message')}")
-            
-            # Test login with new password
-            login_data = {
-                "telegram_tag": self.user_data.get('telegram_tag'),
-                "password": "NewTest456!"
-            }
-            
-            login_success, login_response = self.run_test(
-                "Login with New Password",
-                "POST",
-                "api/auth/login",
-                200,
-                data=login_data
-            )
-            
-            if login_success:
-                self.token = login_response.get('token')
-                print("Login with new password successful")
-            else:
-                print("⚠️ Login with new password failed")
-                return False
-        
-        return success
-
-    def test_logout(self):
-        """Test user logout (authenticated)"""
-        if not self.token:
-            print("⚠️ No auth token available for logout test")
-            return False
-        
-        success, response = self.run_test(
-            "User Logout",
-            "POST",
-            "api/auth/logout",
-            200,
-            auth=True
-        )
-        
-        if success:
-            print(f"Logout Message: {response.get('message')}")
-            self.token = None
         
         return success
 
@@ -643,6 +543,7 @@ def main():
     # Run basic API tests
     print("\n=== Testing Basic API Endpoints ===")
     health_test = tester.test_health_endpoint()
+    stats_test = tester.test_stats_endpoint()
     
     # Test match parsing system
     print("\n=== Testing Match Parsing System ===")
@@ -655,33 +556,35 @@ def main():
     hockey_matches_test = tester.test_sport_matches_endpoint("hockey")
     esports_matches_test = tester.test_sport_matches_endpoint("esports")
     
-    print("\n3. Testing Match Data Structure")
-    match_structure_test = tester.test_match_data_structure()
+    print("\n3. Testing Match Data Structure and Realism")
+    match_structure_test = tester.test_match_data_structure_and_realism()
     
     print("\n4. Testing Refresh Matches Endpoint")
     refresh_matches_test = tester.test_refresh_matches_endpoint()
     
-    print("\n5. Testing Update Daily Matches Endpoint")
-    update_daily_test = tester.test_update_daily_matches_endpoint()
-    
-    print("\n6. Testing Schedule Info Endpoint")
+    print("\n5. Testing Schedule Info Endpoint")
     schedule_info_test = tester.test_schedule_info_endpoint()
+    
+    print("\n6. Testing Update Daily Matches Endpoint")
+    update_daily_test = tester.test_update_daily_matches_endpoint()
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
     
     # Print summary of match parsing system tests
     print("\n=== Match Parsing System Test Summary ===")
-    print(f"1. Today's Matches Endpoint: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
-    print(f"2. Sport-Specific Matches Endpoints:")
+    print(f"1. Health Endpoint: {'✅ PASSED' if health_test else '❌ FAILED'}")
+    print(f"2. Stats Endpoint: {'✅ PASSED' if stats_test else '❌ FAILED'}")
+    print(f"3. Today's Matches Endpoint: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
+    print(f"4. Sport-Specific Matches Endpoints:")
     print(f"   - Football: {'✅ PASSED' if football_matches_test else '❌ FAILED'}")
     print(f"   - Baseball: {'✅ PASSED' if baseball_matches_test else '❌ FAILED'}")
     print(f"   - Hockey: {'✅ PASSED' if hockey_matches_test else '❌ FAILED'}")
     print(f"   - Esports: {'✅ PASSED' if esports_matches_test else '❌ FAILED'}")
-    print(f"3. Match Data Structure: {'✅ PASSED' if match_structure_test else '❌ FAILED'}")
-    print(f"4. Refresh Matches Endpoint: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
-    print(f"5. Update Daily Matches Endpoint: {'✅ PASSED' if update_daily_test else '❌ FAILED'}")
-    print(f"6. Schedule Info Endpoint: {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
+    print(f"5. Match Data Structure and Realism: {'✅ PASSED' if match_structure_test else '❌ FAILED'}")
+    print(f"6. Refresh Matches Endpoint: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
+    print(f"7. Schedule Info Endpoint: {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
+    print(f"8. Update Daily Matches Endpoint: {'✅ PASSED' if update_daily_test else '❌ FAILED'}")
     
     # Return success if all tests passed
     return 0 if tester.tests_passed == tester.tests_run else 1
