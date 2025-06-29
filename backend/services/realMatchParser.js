@@ -77,6 +77,15 @@ class RealMatchParser {
     } else if (apiName === 'odds') {
       // 500 calls per month - be very conservative
       return now - lastCall > 300000; // 5 minutes between calls
+    } else if (apiName === 'baseball') {
+      // 50 calls per minute
+      return now - lastCall > 1200; // 1.2 seconds between calls
+    } else if (apiName === 'hockey') {
+      // 30 calls per minute
+      return now - lastCall > 2000; // 2 seconds between calls
+    } else if (apiName === 'esports') {
+      // 10 calls per minute on free tier
+      return now - lastCall > 6000; // 6 seconds between calls
     }
     
     return true;
