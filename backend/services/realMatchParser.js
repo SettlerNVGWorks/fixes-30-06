@@ -433,18 +433,30 @@ class RealMatchParser {
     }
   }
 
-  // Parse from Football-Data API
+  // Parse from Football-Data API with enhanced data collection
   async parseFromFootballDataAPI() {
     const today = this.getTodayString();
     const axios = this.getAxiosInstance('football');
     
     this.updateApiCallTime('football');
     
-    // Get today's matches from major leagues
-    const competitions = ['PL', 'BL1', 'FL1', 'SA', 'PD']; // Premier League, Bundesliga, etc.
+    // Get today's matches from major leagues with more competitions
+    const competitions = [
+      'PL',   // Premier League  
+      'BL1',  // Bundesliga
+      'FL1',  // Ligue 1
+      'SA',   // Serie A
+      'PD',   // La Liga
+      'CL',   // Champions League
+      'EL',   // Europa League
+      'DED',  // Eredivisie
+      'PPL',  // Primeira Liga
+      'BSA'   // Brasileirão
+    ]; 
     let allMatches = [];
 
-    for (const competition of competitions.slice(0, 2)) { // Limit to 2 leagues to save API calls
+    // Try multiple competitions to get more real matches
+    for (const competition of competitions.slice(0, 5)) { // Limit to 5 to stay within rate limits
       try {
         const response = await axios.get(
           `${this.apis.football.url}/competitions/${competition}/matches`,
@@ -463,22 +475,64 @@ class RealMatchParser {
             team2: match.awayTeam.name,
             match_time: match.utcDate,
             competition: match.competition.name,
-            source: 'football-data-api'
+            source: 'football-data-api',
+            matchday: match.matchday,
+            season: match.season?.year,
+            referee: match.referees?.[0]?.name,
+            venue: match.homeTeam.venue || 'Stadium',
+            logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
+            logo_team2: this.getTeamLogo(match.awayTeam.name, 'football')
           }));
           
           allMatches = allMatches.concat(matches);
         }
 
-        if (allMatches.length >= 2) break; // Stop when we have enough matches
+        if (allMatches.length >= 4) break; // Stop when we have enough matches
         
-        await new Promise(resolve => setTimeout(resolve, 6500)); // Rate limiting
+        await new Promise(resolve => setTimeout(resolve, 6500)); // Rate limiting - 10 per minute
       } catch (error) {
         console.error(`Error fetching ${competition} matches:`, error.message);
         continue;
       }
     }
 
-    return allMatches;
+    // If we still don't have enough matches, try tomorrow's matches
+    if (allMatches.length < 2) {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowString = tomorrow.toISOString().split('T')[0];
+      
+      try {
+        const response = await axios.get(
+          `${this.apis.football.url}/competitions/PL/matches`,
+          {
+            params: {
+              dateFrom: tomorrowString,
+              dateTo: tomorrowString
+            }
+          }
+        );
+
+        if (response.data && response.data.matches) {
+          const tomorrowMatches = response.data.matches.slice(0, 2).map(match => ({
+            sport: 'football',
+            team1: match.homeTeam.name,
+            team2: match.awayTeam.name,
+            match_time: match.utcDate,
+            competition: match.competition.name + ' (Tomorrow)',
+            source: 'football-data-api-tomorrow',
+            logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
+            logo_team2: this.getTeamLogo(match.awayTeam.name, 'football')
+          }));
+          
+          allMatches = allMatches.concat(tomorrowMatches);
+        }
+      } catch (error) {
+        console.log('No tomorrow matches available either');
+      }
+    }
+
+    return allMatches.slice(0, 4); // Return max 4 matches
   }
 
   // Parse from Free Football API
