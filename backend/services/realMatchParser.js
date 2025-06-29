@@ -1051,7 +1051,7 @@ class RealMatchParser {
     });
   }
 
-  // Parse real esports matches
+  // Parse real esports matches (NO MOCK DATA)
   async parseEsportsMatches() {
     const cacheKey = 'esports_matches_today';
     
@@ -1064,34 +1064,36 @@ class RealMatchParser {
 
       // Try PandaScore API first
       if (this.canMakeApiCall('esports') && this.apis.esports.key) {
-        matches = await this.parseFromPandaScore();
-        if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} esports matches from PandaScore API`);
-          this.setCacheData(cacheKey, matches);
-          return matches;
+        try {
+          matches = await this.parseFromPandaScore();
+          if (matches.length >= 2) {
+            console.log(`✅ Got ${matches.length} esports matches from PandaScore API`);
+            this.setCacheData(cacheKey, matches);
+            return matches;
+          }
+        } catch (error) {
+          console.log('⚠️ PandaScore API failed, trying free tracker...');
         }
       }
 
-      // Try free esports tracker
-      if (this.canMakeApiCall('esportsFree')) {
-        matches = await this.parseFromEsportsTracker();
-        if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} esports matches from free tracker`);
-          this.setCacheData(cacheKey, matches);
-          return matches;
+      // Try free esports tracker as backup
+      if (this.canMakeApiCall('esportsFree') && matches.length < 2) {
+        try {
+          const trackerMatches = await this.parseFromEsportsTracker();
+          matches = matches.concat(trackerMatches);
+        } catch (error) {
+          console.log('⚠️ Esports tracker failed');
         }
       }
 
-      // Generate realistic esports matches with real teams and tournaments
-      matches = this.generateRealisticEsportsMatches();
-      console.log(`⚡ Generated ${matches.length} realistic esports fixtures`);
-      
+      // NO FALLBACK TO MOCK DATA
+      console.log(`📊 Found ${matches.length} real esports matches (no fallback to mock data)`);
       this.setCacheData(cacheKey, matches);
       return matches;
 
     } catch (error) {
       console.error('Error parsing esports matches:', error);
-      return this.generateRealisticEsportsMatches();
+      return []; // Return empty array instead of mock data
     }
   }
 
