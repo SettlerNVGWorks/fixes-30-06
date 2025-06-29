@@ -694,7 +694,7 @@ class RealMatchParser {
     return matches;
   }
 
-  // Main function to get all today's matches
+  // Main function to get all today's matches (limit 2 per sport)
   async getTodayMatches() {
     const cacheKey = `real_matches_${this.getTodayString().iso}`;
     
@@ -714,12 +714,18 @@ class RealMatchParser {
         this.parseEsportsMatches()
       ]);
       
+      // Limit to 2 matches per sport
+      const limitedFootball = footballMatches.slice(0, 2);
+      const limitedBaseball = baseballMatches.slice(0, 2);
+      const limitedHockey = hockeyMatches.slice(0, 2);
+      const limitedEsports = esportsMatches.slice(0, 2);
+      
       // Combine all matches
       let allMatches = [
-        ...footballMatches,
-        ...baseballMatches,
-        ...hockeyMatches,
-        ...esportsMatches
+        ...limitedFootball,
+        ...limitedBaseball,
+        ...limitedHockey,
+        ...limitedEsports
       ];
       
       // Add odds to all matches
@@ -733,11 +739,11 @@ class RealMatchParser {
         match.id = this.generateMatchId(match);
       }
       
-      console.log(`✅ Successfully parsed ${allMatches.length} real matches:`);
-      console.log(`   ⚽ Футбол: ${footballMatches.length}`);
-      console.log(`   ⚾ Бейсбол: ${baseballMatches.length}`);
-      console.log(`   🏒 Хоккей: ${hockeyMatches.length}`);
-      console.log(`   🎮 Киберспорт: ${esportsMatches.length}`);
+      console.log(`✅ Successfully parsed ${allMatches.length} real matches (limited to 2 per sport):`);
+      console.log(`   ⚽ Футбол: ${limitedFootball.length}`);
+      console.log(`   ⚾ Бейсбол: ${limitedBaseball.length}`);
+      console.log(`   🏒 Хоккей: ${limitedHockey.length}`);
+      console.log(`   🎮 Киберспорт: ${limitedEsports.length}`);
       
       this.setCacheData(cacheKey, allMatches);
       return allMatches;
