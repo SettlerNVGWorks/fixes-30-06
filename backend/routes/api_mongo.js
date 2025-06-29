@@ -299,23 +299,21 @@ router.get('/matches/today', async (req, res) => {
   }
 });
 
-// Refresh today's matches (force update)
+// Force refresh matches (manual update)
 router.post('/matches/refresh', async (req, res) => {
   try {
     const matches = await matchParser.forceRefreshMatches();
     
     res.json({
       success: true,
-      message: 'Матчи обновлены',
-      total_matches: matches.length,
+      message: 'Матчи обновлены принудительно',
+      matches_found: matches.length,
+      real_data_only: true,
       updated_at: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Refresh matches error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Ошибка обновления матчей' 
-    });
+    console.error('Force refresh error:', error);
+    res.status(500).json({ error: 'Ошибка принудительного обновления матчей' });
   }
 });
 
