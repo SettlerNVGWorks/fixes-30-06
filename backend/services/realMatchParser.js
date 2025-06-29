@@ -200,32 +200,24 @@ class RealMatchParser {
       
       if (odds1 <= 1.6 && odds1 < odds2) {
         // Strong favorite
-        recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${match.team1} (коэф. ${odds1}) - сильный фаворит с высокой вероятностью победы.`;
+        recommendation = this.getStrongFavoriteRecommendation(match, match.team1, odds1);
       } else if (odds2 <= 1.6 && odds2 < odds1) {
         // Strong favorite
-        recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${match.team2} (коэф. ${odds2}) - сильный фаворит с высокой вероятностью победы.`;
+        recommendation = this.getStrongFavoriteRecommendation(match, match.team2, odds2);
       } else if (odds1 >= 2.5 && odds2 >= 2.5 && oddsDraw && oddsDraw <= 2.2) {
         // Draw likely in football
         recommendation = `💰 ПРИОРИТЕТ СТАВКИ: Ничья (коэф. ${oddsDraw}) - равные силы команд, высокая вероятность ничейного исхода.`;
       } else if (Math.abs(odds1 - odds2) <= 0.3) {
-        // Very close odds - suggest over/under or other markets
-        if (match.sport === 'football') {
-          recommendation = `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 2.5 голов - равные силы команд обещают результативную игру.`;
-        } else if (match.sport === 'hockey') {
-          recommendation = `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 5.5 шайб - открытая игра между равными командами.`;
-        } else if (match.sport === 'baseball') {
-          recommendation = `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 8.5 ранов - питчеры могут уступить в результативном матче.`;
-        } else {
-          recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${odds1 < odds2 ? match.team1 : match.team2} (коэф. ${Math.min(odds1, odds2)}) - небольшое преимущество.`;
-        }
+        // Very close odds - suggest alternative markets
+        recommendation = this.getAlternativeMarketRecommendation(match);
       } else if (odds1 > 1.8 && odds1 < 2.8 && odds1 < odds2) {
         // Good value bet
-        recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${match.team1} (коэф. ${odds1}) - отличное соотношение риск/доходность.`;
+        recommendation = this.getValueBetRecommendation(match, match.team1, odds1);
       } else if (odds2 > 1.8 && odds2 < 2.8 && odds2 < odds1) {
         // Good value bet
-        recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${match.team2} (коэф. ${odds2}) - отличное соотношение риск/доходность.`;
+        recommendation = this.getValueBetRecommendation(match, match.team2, odds2);
       } else {
-        // Default recommendation based on lower odds
+        // Default recommendation
         const favoriteTeam = odds1 < odds2 ? match.team1 : match.team2;
         const favoriteOdds = Math.min(odds1, odds2);
         recommendation = `💰 ПРИОРИТЕТ СТАВКИ: ${favoriteTeam} (коэф. ${favoriteOdds}) - рекомендуем ставку на фаворита.`;
@@ -233,6 +225,42 @@ class RealMatchParser {
     }
     
     return `${analysis} ${recommendation}`;
+  }
+
+  // Get strong favorite recommendation
+  getStrongFavoriteRecommendation(match, team, odds) {
+    const sportRecommendations = {
+      'football': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - сильный фаворит. Также рассмотрите фору -1.5 или тотал больше.`,
+      'hockey': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - сильный фаворит. Альтернатива: победа в основное время.`,
+      'baseball': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - сильный фаворит. Рассмотрите фору -1.5 ранов.`,
+      'esports': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - сильный фаворит. Альтернатива: победа 2-0 в картах.`
+    };
+    
+    return sportRecommendations[match.sport] || `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - сильный фаворит с высокой вероятностью победы.`;
+  }
+
+  // Get value bet recommendation
+  getValueBetRecommendation(match, team, odds) {
+    const sportRecommendations = {
+      'football': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - отличная валуйная ставка. Команда недооценена букмекерами.`,
+      'hockey': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - валуйная ставка. Домашний лёд или форма дают преимущество.`,
+      'baseball': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - хорошая ценность. Стартовый питчер в отличной форме.`,
+      'esports': `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - недооценены букмекерами. Map pool играет в их пользу.`
+    };
+    
+    return sportRecommendations[match.sport] || `💰 ПРИОРИТЕТ СТАВКИ: ${team} (коэф. ${odds}) - отличное соотношение риск/доходность.`;
+  }
+
+  // Get alternative market recommendations for close matches
+  getAlternativeMarketRecommendation(match) {
+    const sportRecommendations = {
+      'football': `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 2.5 голов или обе забьют - равные силы обещают результативную игру.`,
+      'hockey': `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 5.5 шайб - открытая игра между равными командами.`,
+      'baseball': `💰 ПРИОРИТЕТ СТАВКИ: Тотал больше 8.5 ранов - питчеры могут уступить в упорном матче.`,
+      'esports': `💰 ПРИОРИТЕТ СТАВКИ: Тотал карт больше 2.5 - равные силы команд, ждём затяжной матч.`
+    };
+    
+    return sportRecommendations[match.sport] || `💰 ПРИОРИТЕТ СТАВКИ: Рассмотрите альтернативные рынки - исход матча непредсказуем.`;
   }
 
   // Generate unique match ID
