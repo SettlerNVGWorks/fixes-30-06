@@ -704,12 +704,21 @@ class RealMatchParser {
     try {
       console.log('🔍 Fetching real matches from APIs...');
       
-      // Get matches from different sources
-      const footballMatches = await this.parseFootballMatches();
-      const otherSportsMatches = await this.generateOtherSportsMatches();
+      // Get matches from different sources in parallel
+      const [footballMatches, baseballMatches, hockeyMatches, esportsMatches] = await Promise.all([
+        this.parseFootballMatches(),
+        this.parseBaseballMatches(),
+        this.parseHockeyMatches(),
+        this.parseEsportsMatches()
+      ]);
       
       // Combine all matches
-      let allMatches = [...footballMatches, ...otherSportsMatches];
+      let allMatches = [
+        ...footballMatches,
+        ...baseballMatches,
+        ...hockeyMatches,
+        ...esportsMatches
+      ];
       
       // Add odds to all matches
       allMatches = await this.parseOddsForMatches(allMatches);
@@ -719,9 +728,14 @@ class RealMatchParser {
         match.analysis = await this.getRandomAnalysisBySport(match.sport);
         match.match_date = this.getTodayString().iso;
         match.prediction = this.generatePrediction(match);
+        match.id = this.generateMatchId(match);
       }
       
-      console.log(`✅ Successfully parsed ${allMatches.length} real matches`);
+      console.log(`✅ Successfully parsed ${allMatches.length} real matches:`);
+      console.log(`   ⚽ Футбол: ${footballMatches.length}`);
+      console.log(`   ⚾ Бейсбол: ${baseballMatches.length}`);
+      console.log(`   🏒 Хоккей: ${hockeyMatches.length}`);
+      console.log(`   🎮 Киберспорт: ${esportsMatches.length}`);
       
       this.setCacheData(cacheKey, allMatches);
       return allMatches;
@@ -731,6 +745,12 @@ class RealMatchParser {
       // Fallback to mock data
       return this.generateFallbackMatches();
     }
+  }
+
+  // Generate unique match ID
+  generateMatchId(match) {
+    const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
+    return str.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
   }
 
   // Generate prediction based on odds and team data
