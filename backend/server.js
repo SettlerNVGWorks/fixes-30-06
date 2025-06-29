@@ -5,8 +5,8 @@ const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
 const { initDatabase } = require('./database_mongo');
-const authRoutes = require('./routes/auth');
-const apiRoutes = require('./routes/api');
+const authRoutes = require('./routes/auth_mongo');
+const apiRoutes = require('./routes/api_mongo');
 const Scheduler = require('./services/scheduler');
 
 const app = express();
