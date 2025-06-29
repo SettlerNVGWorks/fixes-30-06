@@ -86,7 +86,7 @@ class LogoService {
       // NHL teams
       'Toronto Maple Leafs': 'https://upload.wikimedia.org/wikipedia/en/thumb/b/b6/Toronto_Maple_Leafs_2016_logo.svg/300px-Toronto_Maple_Leafs_2016_logo.svg.png',
       'Montreal Canadiens': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Montreal_Canadiens.svg/330px-Montreal_Canadiens.svg.png',
-      'Boston Bruins': 'https://upload.wikimedia.org/wikipedia/en/thumb/1/12/Boston_Bruins.svg/300px-Boston_Bruins.svg.png',
+      'Boston Bruins': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Boston_Bruins_100th_anniversary_logo.svg/500px-Boston_Bruins_100th_anniversary_logo.svg.png',
       'New York Rangers': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/New_York_Rangers.svg/300px-New_York_Rangers.svg.png',
       'Chicago Blackhawks': 'https://upload.wikimedia.org/wikipedia/en/thumb/2/29/Chicago_Blackhawks_logo.svg/300px-Chicago_Blackhawks_logo.svg.png',
       'Detroit Red Wings': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e0/Detroit_Red_Wings_logo.svg/300px-Detroit_Red_Wings_logo.svg.png',
