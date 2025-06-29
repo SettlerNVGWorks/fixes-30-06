@@ -3,7 +3,7 @@ const RealMatchParser = require('./realMatchParser');
 
 class Scheduler {
   constructor() {
-    this.matchParser = new MatchParser();
+    this.matchParser = new RealMatchParser();
     this.setupSchedules();
   }
 
