@@ -139,9 +139,11 @@ class Scheduler {
   // Показать следующие запланированные задачи
   getScheduleInfo() {
     return {
-      dailyMatchUpdate: '12:00 МСК каждый день',
+      dailyMatchUpdate: '12:00 МСК и 00:00 МСК каждый день',
       oldMatchCleanup: '00:00 МСК каждый день',
-      timezone: 'Europe/Moscow'
+      timezone: 'Europe/Moscow',
+      matchesPerSport: 2,
+      totalMatchesPerDay: 8
     };
   }
 }
