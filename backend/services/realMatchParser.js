@@ -552,34 +552,61 @@ class RealMatchParser {
   // Parse from API-Football (Alternative source)
   async parseFromAPIFootball() {
     console.log('🔍 Testing API-Football alternative source...');
+    const axios = this.getAxiosInstance('footballAPI');
+    const today = this.getTodayString();
     
-    // For testing purposes, return mock data
-    return [
-      {
-        sport: 'football',
-        team1: 'Real Madrid',
-        team2: 'Barcelona',
-        match_time: `${this.getTodayString().iso} 21:00:00`,
-        competition: 'La Liga',
-        source: 'api-football',
-        venue: 'Santiago Bernabeu',
-        referee: 'Carlos Del Cerro Grande',
-        logo_team1: await this.getTeamLogoUrl('Real Madrid', 'football'),
-        logo_team2: await this.getTeamLogoUrl('Barcelona', 'football')
-      },
-      {
-        sport: 'football',
-        team1: 'Manchester City',
-        team2: 'Liverpool',
-        match_time: `${this.getTodayString().iso} 19:00:00`,
-        competition: 'Premier League',
-        source: 'api-football',
-        venue: 'Etihad Stadium',
-        referee: 'Michael Oliver',
-        logo_team1: await this.getTeamLogoUrl('Manchester City', 'football'),
-        logo_team2: await this.getTeamLogoUrl('Liverpool', 'football')
+    this.updateApiCallTime('footballAPI');
+    
+    try {
+      // Get fixtures for today from API-Football
+      const response = await axios.get('https://v3.football.api-sports.io/fixtures', {
+        params: {
+          date: today.iso,
+          league: '39,140,78,61', // Premier League, La Liga, Bundesliga, Serie A
+          season: '2025'
+        }
+      });
+
+      if (response.data && response.data.response && response.data.response.length > 0) {
+        const fixtures = response.data.response.slice(0, 4); // Limit to 4 matches
+        
+        const processedMatches = await Promise.all(
+          fixtures.map(async (fixture) => {
+            const homeTeam = fixture.teams.home.name;
+            const awayTeam = fixture.teams.away.name;
+            
+            // Convert UTC time to Moscow time
+            const matchTime = this.convertToMoscowTime(fixture.fixture.date);
+            
+            const logo1 = await this.getTeamLogoUrl(homeTeam, 'football');
+            const logo2 = await this.getTeamLogoUrl(awayTeam, 'football');
+
+            return {
+              sport: 'football',
+              team1: homeTeam,
+              team2: awayTeam,
+              match_time: matchTime,
+              competition: fixture.league.name,
+              source: 'api-football',
+              venue: fixture.fixture.venue?.name || 'Stadium',
+              referee: fixture.fixture.referee || 'TBD',
+              logo_team1: logo1,
+              logo_team2: logo2,
+              fixture_id: fixture.fixture.id
+            };
+          })
+        );
+        
+        console.log(`✅ Found ${processedMatches.length} real football matches from API-Football`);
+        return processedMatches;
+      } else {
+        console.log('⚠️ No football matches found from API-Football for today');
+        return [];
       }
-    ];
+    } catch (error) {
+      console.error('API-Football error:', error.response?.data || error.message);
+      return [];
+    }
   }
 
   // Parse from Free Football API
