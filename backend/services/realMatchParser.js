@@ -875,20 +875,35 @@ class RealMatchParser {
       if (response.data && response.data.dates && response.data.dates.length > 0) {
         const games = response.data.dates[0].games || [];
         
-        matches = games.slice(0, 2).map(game => ({
-          sport: 'baseball',
-          team1: game.teams.home.team.name,
-          team2: game.teams.away.team.name,
-          match_time: game.gameDate, // Keep REAL time from API
-          venue: game.venue.name,
-          competition: 'MLB',
-          source: 'mlb-statsapi',
-          gameId: game.gamePk, // Real game ID for verification
-          logo_team1: this.getTeamLogoUrl(game.teams.home.team.name, 'baseball'),
-          logo_team2: this.getTeamLogoUrl(game.teams.away.team.name, 'baseball')
-        }));
+        const processedMatches = await Promise.all(
+          games.slice(0, 2).map(async (game) => {
+            // Fix time conversion
+            let matchTime = game.gameDate;
+            if (!this.isTimeRealistic(matchTime)) {
+              matchTime = this.convertToMoscowTime(matchTime);
+            }
+            
+            // Get logos automatically
+            const logo1 = await this.getTeamLogoUrl(game.teams.home.team.name, 'baseball');
+            const logo2 = await this.getTeamLogoUrl(game.teams.away.team.name, 'baseball');
+            
+            return {
+              sport: 'baseball',
+              team1: game.teams.home.team.name,
+              team2: game.teams.away.team.name,
+              match_time: matchTime, // Fixed time
+              venue: game.venue.name,
+              competition: 'MLB',
+              source: 'mlb-statsapi',
+              gameId: game.gamePk, // Real game ID for verification
+              logo_team1: logo1,
+              logo_team2: logo2
+            };
+          })
+        );
         
-        console.log(`✅ Found ${matches.length} real MLB games for today`);
+        matches = processedMatches;
+        console.log(`✅ Found ${matches.length} real MLB games for today with updated logos`);
       }
 
       // NO FALLBACK TO MOCK DATA - return empty if no real games
