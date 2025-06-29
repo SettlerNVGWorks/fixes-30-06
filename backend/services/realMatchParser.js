@@ -1,6 +1,7 @@
 const axios = require('axios');
 const UserAgent = require('user-agents');
 const { getDatabase, getSportAnalysis } = require('../database_mongo');
+const { getTeamLogo } = require('../data/teamLogos');
 
 class RealMatchParser {
   constructor() {
