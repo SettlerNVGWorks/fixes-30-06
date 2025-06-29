@@ -1,6 +1,6 @@
 const express = require('express');
-const { pool } = require('../database');
-const MatchParser = require('../services/matchParser');
+const { pool } = require('../database_enhanced');
+const RealMatchParser = require('../services/realMatchParser');
 
 const router = express.Router();
 const matchParser = new MatchParser();
