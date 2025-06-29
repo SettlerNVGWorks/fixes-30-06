@@ -996,7 +996,7 @@ class RealMatchParser {
       if (this.canMakeApiCall('esports') && this.apis.esports.key) {
         matches = await this.parseFromPandaScore();
         if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} esports matches from PandaScore`);
+          console.log(`✅ Got ${matches.length} esports matches from PandaScore API`);
           this.setCacheData(cacheKey, matches);
           return matches;
         }
