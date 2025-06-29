@@ -114,8 +114,8 @@ const initDatabase = async () => {
     const analysesCount = await db.collection('match_analyses').countDocuments();
     if (analysesCount === 0) {
       const analyses = [];
-      for (const [sport, sportAnalyses] of Object.entries(sportAnalyses)) {
-        for (const analysis of sportAnalyses) {
+      for (const [sport, analyses_list] of Object.entries(sportAnalyses)) {
+        for (const analysis of analyses_list) {
           analyses.push({
             analysis_text: analysis,
             sport: sport,
