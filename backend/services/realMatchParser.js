@@ -433,8 +433,8 @@ class RealMatchParser {
             season: match.season?.year,
             referee: match.referees?.[0]?.name,
             venue: match.homeTeam.venue || 'Stadium',
-            logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
-            logo_team2: this.getTeamLogo(match.awayTeam.name, 'football')
+            logo_team1: this.getTeamLogoUrl(match.homeTeam.name, 'football'),
+            logo_team2: this.getTeamLogoUrl(match.awayTeam.name, 'football')
           }));
           
           allMatches = allMatches.concat(matches);
