@@ -357,7 +357,7 @@ class RealMatchParser {
     return sportAnalyses[Math.floor(Math.random() * sportAnalyses.length)];
   }
 
-  // Parse real football matches with multiple sources
+  // Parse real football matches with multiple sources (NO MOCK DATA)
   async parseFootballMatches() {
     const cacheKey = 'football_matches_today';
     
@@ -368,13 +368,25 @@ class RealMatchParser {
     try {
       let allMatches = [];
       
-      // For testing purposes, skip Football-Data API and try API-Football first
-      console.log('⚠️ Skipping Football-Data API for testing, trying API-Football...');
-      
-      // Try new API-Football as priority alternative
-      if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key) {
+      // Try Football-Data API first
+      if (this.canMakeApiCall('football') && this.apis.football.key) {
         try {
-          allMatches = await this.parseFromAPIFootball();
+          allMatches = await this.parseFromFootballDataAPI();
+          if (allMatches.length >= 2) {
+            console.log(`✅ Got ${allMatches.length} football matches from Football-Data API`);
+            this.setCacheData(cacheKey, allMatches);
+            return allMatches;
+          }
+        } catch (error) {
+          console.log('⚠️ Football-Data API failed, trying API-Football...');
+        }
+      }
+      
+      // Try API-Football as backup
+      if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key && allMatches.length < 2) {
+        try {
+          const apiFootballMatches = await this.parseFromAPIFootball();
+          allMatches = allMatches.concat(apiFootballMatches);
           if (allMatches.length >= 2) {
             console.log(`✅ Got ${allMatches.length} football matches from API-Football`);
             this.setCacheData(cacheKey, allMatches);
@@ -385,30 +397,29 @@ class RealMatchParser {
         }
       }
 
-      // Try free football API as backup
-      if (this.canMakeApiCall('footballFree')) {
+      // Try free football API as final backup
+      if (this.canMakeApiCall('footballFree') && allMatches.length < 2) {
         try {
-          allMatches = await this.parseFromFreeFootballAPI();
+          const freeMatches = await this.parseFromFreeFootballAPI();
+          allMatches = allMatches.concat(freeMatches);
           if (allMatches.length >= 2) {
             console.log(`✅ Got ${allMatches.length} football matches from Free Football API`);
             this.setCacheData(cacheKey, allMatches);
             return allMatches;
           }
         } catch (error) {
-          console.log('⚠️ Free Football API failed, using fixture generation...');
+          console.log('⚠️ Free Football API failed');
         }
       }
 
-      // Generate realistic fixture data based on current season
-      allMatches = this.generateRealisticFootballMatches();
-      console.log(`⚡ Generated ${allMatches.length} realistic football fixtures`);
-      
+      // NO REALISTIC/MOCK DATA - return what we have or empty array
+      console.log(`📊 Found ${allMatches.length} real football matches (no fallback to mock data)`);
       this.setCacheData(cacheKey, allMatches);
       return allMatches;
 
     } catch (error) {
       console.error('Error parsing football matches:', error);
-      return this.generateRealisticFootballMatches();
+      return []; // Return empty array instead of mock data
     }
   }
 
