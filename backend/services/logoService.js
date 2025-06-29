@@ -303,29 +303,113 @@ class LogoService {
   }
 
   // Generate a high-quality placeholder logo
+  // Generate placeholder logo with multiple options
   generatePlaceholderLogo(teamName, sport) {
-    const sportEmojis = {
-      football: '⚽',
-      baseball: '⚾', 
-      hockey: '🏒',
-      esports: '🎮'
+    // First try to create a more professional logo using different services
+    const logoOptions = [
+      this.generateShieldLogo(teamName, sport),
+      this.generateModernLogo(teamName, sport),
+      this.generateMinimalLogo(teamName, sport)
+    ];
+    
+    // For now, use the modern logo approach
+    return this.generateModernLogo(teamName, sport);
+  }
+
+  // Generate a modern team logo with better styling
+  generateModernLogo(teamName, sport) {
+    const sportConfigs = {
+      football: {
+        emoji: '⚽',
+        bgColor: '1a5f3f', // Dark green
+        textColor: 'FFFFFF',
+        accentColor: '28a745'
+      },
+      baseball: {
+        emoji: '⚾', 
+        bgColor: '1e3a8a', // Dark blue
+        textColor: 'FFFFFF',
+        accentColor: '3b82f6'
+      },
+      hockey: {
+        emoji: '🏒',
+        bgColor: '581c87', // Dark purple
+        textColor: 'FFFFFF', 
+        accentColor: '8b5cf6'
+      },
+      esports: {
+        emoji: '🎮',
+        bgColor: 'dc2626', // Dark red
+        textColor: 'FFFFFF',
+        accentColor: 'ef4444'
+      }
     };
     
-    const sportColors = {
-      football: '28A745',
-      baseball: '007BFF',
-      hockey: '6F42C1',
-      esports: 'DC3545'
-    };
-    
-    const emoji = sportEmojis[sport] || '🏆';
-    const color = sportColors[sport] || '28A745';
+    const config = sportConfigs[sport] || sportConfigs.esports;
     const initials = this.getTeamInitials(teamName);
     
-    const logoUrl = `https://via.placeholder.com/200x200/${color}/FFFFFF?text=${encodeURIComponent(initials + ' ' + emoji)}`;
+    // Create a more sophisticated placeholder using a shield-like design
+    const logoUrl = `https://via.placeholder.com/256x256/${config.bgColor}/${config.textColor}?text=${encodeURIComponent(initials)}`;
     
-    console.log(`📝 Generated placeholder logo for ${teamName}: ${logoUrl}`);
+    console.log(`🎨 Generated modern logo for ${teamName}: ${logoUrl}`);
     return logoUrl;
+  }
+
+  // Generate shield-style logo 
+  generateShieldLogo(teamName, sport) {
+    const initials = this.getTeamInitials(teamName);
+    const sportColors = {
+      football: '28a745',
+      baseball: '3b82f6', 
+      hockey: '8b5cf6',
+      esports: 'ef4444'
+    };
+    
+    const color = sportColors[sport] || 'ef4444';
+    return `https://via.placeholder.com/200x240/${color}/FFFFFF?text=${encodeURIComponent(initials)}`;
+  }
+
+  // Generate minimal circular logo
+  generateMinimalLogo(teamName, sport) {
+    const initials = this.getTeamInitials(teamName);
+    const sportGradients = {
+      football: '22c55e',
+      baseball: '3b82f6',
+      hockey: 'a855f7', 
+      esports: 'f97316'
+    };
+    
+    const color = sportGradients[sport] || 'f97316';
+    return `https://via.placeholder.com/200x200/${color}/FFFFFF?text=${encodeURIComponent(initials)}`;
+  }
+
+  // Advanced team logo generation with external service fallback
+  async generateAdvancedLogo(teamName, sport) {
+    try {
+      // Try to use UI Avatars API for better looking logos
+      const initials = this.getTeamInitials(teamName);
+      const sportColors = {
+        football: '28a745',
+        baseball: '3b82f6', 
+        hockey: '8b5cf6',
+        esports: 'ef4444'
+      };
+      
+      const bgColor = sportColors[sport] || 'ef4444';
+      const logoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=200&background=${bgColor}&color=fff&format=png&rounded=true&bold=true`;
+      
+      // Test if the service is available
+      const testResponse = await axios.head(logoUrl, { timeout: 3000 });
+      
+      if (testResponse.status === 200) {
+        console.log(`🎨 Generated advanced logo for ${teamName}: ${logoUrl}`);
+        return logoUrl;
+      }
+    } catch (error) {
+      console.log(`⚠️ Advanced logo generation failed for ${teamName}, using fallback`);
+    }
+    
+    return this.generateModernLogo(teamName, sport);
   }
 
   // Get team initials for placeholder
