@@ -476,7 +476,7 @@ class RealMatchParser {
               competition: match.competition.name + ` (${dayOffset} day${dayOffset > 1 ? 's' : ''} ahead)`,
               source: 'football-data-api-future',
               logo_team1: this.getTeamLogoUrl(match.homeTeam.name, 'football'),
-              logo_team2: this.getTeamLogo(match.awayTeam.name, 'football'),
+              logo_team2: this.getTeamLogoUrl(match.awayTeam.name, 'football'),
               original_date: match.utcDate
             }));
             
