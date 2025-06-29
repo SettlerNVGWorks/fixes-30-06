@@ -14,11 +14,13 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 секунд таймаут
 });
 
-// Add token to requests if available
+// Add request logging
 api.interceptors.request.use(
   (config) => {
+    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,6 +28,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('❌ Request Error:', error);
     return Promise.reject(error);
   }
 );
