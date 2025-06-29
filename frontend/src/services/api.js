@@ -47,6 +47,12 @@ export const authAPI = {
   logout: () => api.post('/api/auth/logout'),
   getProfile: () => api.get('/api/auth/profile'),
   changePassword: (passwordData) => api.put('/api/auth/change-password', passwordData),
+  verifyEmail: (token) => api.post('/api/auth/verify-email', { token }),
+  resendVerification: (email) => api.post('/api/auth/resend-verification', { email }),
+  forgotPassword: (email) => api.post('/api/auth/forgot-password', { email }),
+  resetPassword: (data) => api.post('/api/auth/reset-password', data),
+  telegramAuthStart: (email) => api.post('/api/auth/telegram-auth-start', { email }),
+  telegramAuthStatus: (token) => api.get(`/api/auth/telegram-auth-status/${token}`),
 };
 
 // Sports API functions
