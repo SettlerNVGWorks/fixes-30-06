@@ -446,56 +446,41 @@ class RealMatchParser {
     }
 
     try {
-      let allMatches = [];
+      let matches = [];
       
-      // Try Football-Data API first
+      // Try Football-Data API first if we have key
       if (this.canMakeApiCall('football') && this.apis.football.key) {
-        try {
-          allMatches = await this.parseFromFootballDataAPI();
-          if (allMatches.length >= 2) {
-            console.log(`✅ Got ${allMatches.length} football matches from Football-Data API`);
-            this.setCacheData(cacheKey, allMatches);
-            return allMatches;
-          }
-        } catch (error) {
-          console.log('⚠️ Football-Data API failed, trying API-Football...');
+        matches = await this.parseFromFootballDataAPI();
+        
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} football matches from Football-Data API`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
         }
       }
       
       // Try API-Football as backup
-      if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key && allMatches.length < 2) {
-        try {
-          const apiFootballMatches = await this.parseFromAPIFootball();
-          allMatches = allMatches.concat(apiFootballMatches);
-          if (allMatches.length >= 2) {
-            console.log(`✅ Got ${allMatches.length} football matches from API-Football`);
-            this.setCacheData(cacheKey, allMatches);
-            return allMatches;
-          }
-        } catch (error) {
-          console.log('⚠️ API-Football failed, trying free sources...');
+      if (this.canMakeApiCall('footballAPI') && this.apis.footballAPI.key && matches.length < 2) {
+        const apiFootballMatches = await this.parseFromAPIFootball();
+        matches = matches.concat(apiFootballMatches);
+        
+        if (matches.length >= 2) {
+          console.log(`✅ Got ${matches.length} football matches from API-Football`);
+          this.setCacheData(cacheKey, matches);
+          return matches;
         }
       }
-
+      
       // Try free football API as final backup
-      if (this.canMakeApiCall('footballFree') && allMatches.length < 2) {
-        try {
-          const freeMatches = await this.parseFromFreeFootballAPI();
-          allMatches = allMatches.concat(freeMatches);
-          if (allMatches.length >= 2) {
-            console.log(`✅ Got ${allMatches.length} football matches from Free Football API`);
-            this.setCacheData(cacheKey, allMatches);
-            return allMatches;
-          }
-        } catch (error) {
-          console.log('⚠️ Free Football API failed');
-        }
+      if (matches.length < 2) {
+        const freeMatches = await this.parseFromFreeFootballAPI();
+        matches = matches.concat(freeMatches);
       }
 
-      // NO REALISTIC/MOCK DATA - return what we have or empty array
-      console.log(`📊 Found ${allMatches.length} real football matches (no fallback to mock data)`);
-      this.setCacheData(cacheKey, allMatches);
-      return allMatches;
+      // NO FALLBACK TO MOCK DATA
+      console.log(`📊 Found ${matches.length} real football matches (no fallback to mock data)`);
+      this.setCacheData(cacheKey, matches);
+      return matches;
 
     } catch (error) {
       console.error('Error parsing football matches:', error);
@@ -503,113 +488,65 @@ class RealMatchParser {
     }
   }
 
-  // Parse from Football-Data API with enhanced data collection
+  // Parse from Football-Data API with time fixes and logo updates
   async parseFromFootballDataAPI() {
     const today = this.getTodayString();
     const axios = this.getAxiosInstance('football');
     
     this.updateApiCallTime('football');
     
-    // Get today's matches from major leagues with more competitions
-    const competitions = [
-      'PL',   // Premier League  
-      'BL1',  // Bundesliga
-      'FL1',  // Ligue 1
-      'SA',   // Serie A
-      'PD',   // La Liga
-      'CL',   // Champions League
-      'EL',   // Europa League
-      'DED',  // Eredivisie
-      'PPL',  // Primeira Liga
-      'BSA'   // Brasileirão
-    ]; 
-    let allMatches = [];
-
-    // Try multiple competitions to get more real matches
-    for (const competition of competitions.slice(0, 5)) { // Limit to 5 to stay within rate limits
-      try {
+    try {
+      // Get matches for today and tomorrow
+      const dates = [today.iso, this.getTomorrowString()];
+      let allMatches = [];
+      
+      for (const date of dates) {
         const response = await axios.get(
-          `${this.apis.football.url}/competitions/${competition}/matches`,
-          {
-            params: {
-              dateFrom: today.iso,
-              dateTo: today.iso
-            }
-          }
+          `${this.apis.football.url}/matches?dateFrom=${date}&dateTo=${date}`
         );
-
+        
         if (response.data && response.data.matches) {
-          const matches = response.data.matches.map(match => ({
+          allMatches = allMatches.concat(response.data.matches);
+        }
+        
+        // Rate limiting delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      // Process matches with fixed times and auto-logos
+      const processedMatches = await Promise.all(
+        allMatches.slice(0, 4).map(async (match) => {
+          // Fix time conversion
+          let matchTime = match.utcDate;
+          if (!this.isTimeRealistic(matchTime)) {
+            matchTime = this.convertToMoscowTime(matchTime);
+          }
+          
+          // Get logos automatically
+          const logo1 = await this.getTeamLogoUrl(match.homeTeam.name, 'football');
+          const logo2 = await this.getTeamLogoUrl(match.awayTeam.name, 'football');
+          
+          return {
             sport: 'football',
             team1: match.homeTeam.name,
             team2: match.awayTeam.name,
-            match_time: match.utcDate,
+            match_time: matchTime, // Fixed time
             competition: match.competition.name,
+            venue: match.venue || 'Stadium',
             source: 'football-data-api',
             matchday: match.matchday,
-            season: match.season?.year,
-            referee: match.referees?.[0]?.name,
-            venue: match.homeTeam.venue || 'Stadium',
-            logo_team1: this.getTeamLogoUrl(match.homeTeam.name, 'football'),
-            logo_team2: this.getTeamLogoUrl(match.awayTeam.name, 'football')
-          }));
-          
-          allMatches = allMatches.concat(matches);
-        }
-
-        if (allMatches.length >= 4) break; // Stop when we have enough matches
-        
-        await new Promise(resolve => setTimeout(resolve, 6500)); // Rate limiting - 10 per minute
-      } catch (error) {
-        console.error(`Error fetching ${competition} matches:`, error.message);
-        continue;
-      }
+            logo_team1: logo1,
+            logo_team2: logo2
+          };
+        })
+      );
+      
+      return processedMatches;
+      
+    } catch (error) {
+      console.error('Football-Data API error:', error.response?.data || error.message);
+      return [];
     }
-
-    // If we still don't have enough matches, try next few days
-    if (allMatches.length < 2) {
-      for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
-        const futureDate = new Date();
-        futureDate.setDate(futureDate.getDate() + dayOffset);
-        const futureDateString = futureDate.toISOString().split('T')[0];
-        
-        try {
-          const response = await axios.get(
-            `${this.apis.football.url}/competitions/PL/matches`,
-            {
-              params: {
-                dateFrom: futureDateString,
-                dateTo: futureDateString
-              }
-            }
-          );
-
-          if (response.data && response.data.matches && response.data.matches.length > 0) {
-            const futureMatches = response.data.matches.slice(0, 2).map(match => ({
-              sport: 'football',
-              team1: match.homeTeam.name,
-              team2: match.awayTeam.name,
-              match_time: `${this.getTodayString().iso} ${19 + Math.floor(Math.random() * 3)}:00:00`, // Schedule for today evening
-              competition: match.competition.name + ` (${dayOffset} day${dayOffset > 1 ? 's' : ''} ahead)`,
-              source: 'football-data-api-future',
-              logo_team1: this.getTeamLogoUrl(match.homeTeam.name, 'football'),
-              logo_team2: this.getTeamLogoUrl(match.awayTeam.name, 'football'),
-              original_date: match.utcDate
-            }));
-            
-            allMatches = allMatches.concat(futureMatches);
-            console.log(`✅ Found ${futureMatches.length} upcoming football matches (${dayOffset} days ahead)`);
-            break;
-          }
-        } catch (error) {
-          continue;
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 6500)); // Rate limiting
-      }
-    }
-
-    return allMatches.slice(0, 4); // Return max 4 matches
   }
 
   // Parse from API-Football (Alternative source)
