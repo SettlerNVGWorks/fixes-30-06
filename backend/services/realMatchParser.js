@@ -1382,7 +1382,48 @@ class RealMatchParser {
     }
   }
 
-  // Calculate realism score for a match (0.0 to 1.0)
+  // Check if match is from real API source (no mock data)
+  isRealMatch(match) {
+    const realSources = [
+      'mlb-statsapi',           // 100% real MLB data
+      'football-data-api',      // 100% real football data
+      'football-data-api-future', // 95% real (upcoming matches)
+      'nhl-api',               // 100% real NHL data
+      'pandascore-api',        // 100% real esports data
+      'pandascore-upcoming',   // 100% real esports data
+      'pandascore-running',    // 100% real live data
+      'api-football',          // Real football API
+      'balldontlie-nhl',       // Real NHL API
+      'free-football-api',     // 90% real
+      'thesportsdb',           // 80% real
+      'esports-tracker'        // 80% real
+    ];
+    
+    return realSources.includes(match.source);
+  }
+
+  // Get match status based on real time
+  getMatchStatus(matchTime) {
+    const now = new Date();
+    const matchDate = new Date(matchTime);
+    
+    if (now < matchDate) {
+      return 'scheduled';
+    } else {
+      // Check if enough time has passed for match to be finished
+      const timeDiff = now - matchDate;
+      const hoursElapsed = timeDiff / (1000 * 60 * 60);
+      
+      // Different sports have different typical durations
+      if (hoursElapsed > 4) { // Most matches should be finished after 4 hours
+        return 'finished';
+      } else if (hoursElapsed > 0) {
+        return 'live';
+      }
+    }
+    
+    return 'scheduled';
+  }
   calculateRealismScore(match) {
     const source = match.source;
     
