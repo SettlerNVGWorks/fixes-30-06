@@ -27,7 +27,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://2b270df9-5d04-49db-8d2d-4dcb43eb5a03.preview.emergentagent.com'
+    'https://cc9502de-b558-4659-9f06-39e9900da85f.preview.emergentagent.com'
   ],
   credentials: true
 }));
