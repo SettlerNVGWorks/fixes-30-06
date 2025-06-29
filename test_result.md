@@ -228,6 +228,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Schedule correctly set for 09:00 МСК (morning) and 19:00 МСК (evening). The /api/matches/schedule-info endpoint returns the updated schedule information. All tests passed."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: Schedule info endpoint correctly shows 09:00 and 19:00 MSK times. The scheduler is properly configured to run at these times."
         
   - task: "Implement real API data only (no mock data)"
     implemented: true
@@ -243,6 +246,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: System correctly returns only real API data. No mock data is generated. The real_api_source flag is set in the database but not returned in the API response. All tests passed."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: System is correctly returning only real API data with no mock data fallbacks. The /api/matches/today endpoint returns matches from real sources."
         
   - task: "Add match status system (scheduled/live/finished)"
     implemented: true
@@ -258,6 +264,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Match status system works correctly. All matches have a valid status (scheduled, live, or finished). Status is determined based on real match time. All tests passed."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: Match status system is working correctly. All matches have valid statuses (scheduled, live, or finished) based on their match times."
         
   - task: "Use real match times from APIs"
     implemented: true
@@ -273,6 +282,54 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: System correctly uses real match times from APIs. All match times are in valid UTC/GMT format. No time modification is performed. All tests passed."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: System is correctly using real match times from APIs. All match times are in valid formats and properly converted to Moscow timezone when needed."
+        
+  - task: "Automatic Logo Fetching"
+    implemented: true
+    working: true
+    file: "services/logoService.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Created LogoService with multiple API sources (SportsDB, Wikipedia, Logo.dev) for automatic team logo fetching"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Logo service is working correctly with proper fallback chain. The service tries multiple sources (SportsDB, Wikipedia, Logo.dev) and falls back to placeholder generation if needed. The /api/logos/team/{teamName}/{sport} endpoint returns logos for both known and unknown teams."
+        
+  - task: "Logo Management APIs"
+    implemented: true
+    working: true
+    file: "routes/api_mongo.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added logo management endpoints: /logos/team/:teamName/:sport, /logos/update-all, /logos/all"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Logo management APIs are working correctly. The /api/logos/all endpoint returns cached logos from the database. The /api/logos/update-all endpoint updates all team logos. The /api/logos/team/{teamName}/{sport} endpoint fetches logos for specific teams."
+        
+  - task: "Enhanced Time Parsing"
+    implemented: true
+    working: true
+    file: "services/realMatchParser.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added proper time conversion functions (convertToMoscowTime, isTimeRealistic) for accurate match time handling"
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: Time parsing and conversion is working correctly. The convertToMoscowTime function properly converts UTC times to Moscow timezone. The isTimeRealistic function correctly validates match times."
 
 frontend:
   - task: "Move account button next to hamburger button"
