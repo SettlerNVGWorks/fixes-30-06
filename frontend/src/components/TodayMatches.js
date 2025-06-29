@@ -53,17 +53,75 @@ const TodayMatches = () => {
     }
   };
 
-  // Format match time
+  // Format match time with date if needed
   const formatMatchTime = (matchTime) => {
     try {
       const date = new Date(matchTime);
-      return date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Europe/Moscow'
-      });
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const matchDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      // Check if match is today
+      const isToday = matchDate.getTime() === today.getTime();
+      
+      if (isToday) {
+        return date.toLocaleTimeString('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Europe/Moscow'
+        });
+      } else {
+        // Include date if not today
+        return date.toLocaleDateString('ru-RU', {
+          day: '2-digit',
+          month: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'Europe/Moscow'
+        });
+      }
     } catch (error) {
       return 'Время неизвестно';
+    }
+  };
+
+  // Get match status info
+  const getMatchStatus = (match) => {
+    const status = match.status || 'scheduled';
+    const now = new Date();
+    const matchTime = new Date(match.match_time);
+    
+    switch (status) {
+      case 'live':
+        return {
+          text: 'ИДЁТ МАТЧ',
+          color: 'text-green-400',
+          bgColor: 'bg-green-500/20',
+          icon: '🔴'
+        };
+      case 'finished':
+        return {
+          text: 'ЗАВЕРШЁН',
+          color: 'text-gray-400',
+          bgColor: 'bg-gray-500/20',
+          icon: '✅'
+        };
+      default:
+        // Check if match should have started but status is still scheduled
+        if (now > matchTime) {
+          return {
+            text: 'ВОЗМОЖНО ИДЁТ',
+            color: 'text-yellow-400',
+            bgColor: 'bg-yellow-500/20',
+            icon: '⚡'
+          };
+        }
+        return {
+          text: 'ЗАПЛАНИРОВАН',
+          color: 'text-blue-400',
+          bgColor: 'bg-blue-500/20',
+          icon: '📅'
+        };
     }
   };
 
