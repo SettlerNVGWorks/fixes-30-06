@@ -318,6 +318,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Logo management APIs are working correctly. The /api/logos/all endpoint returns cached logos from the database. The /api/logos/update-all endpoint updates all team logos. The /api/logos/team/{teamName}/{sport} endpoint fetches logos for specific teams."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: Logo management APIs are working correctly for all sports. The /api/logos/update-all endpoint successfully updates logos for all teams. The /api/logos/team/{teamName}/{sport} endpoint returns logos for all sports (football, baseball, hockey, esports)."
         
   - task: "Enhanced Time Parsing"
     implemented: true
