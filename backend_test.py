@@ -162,6 +162,16 @@ class SportPredictionsAPITester:
                     print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
                     print(f"Match time: {sample_match.get('match_time')}")
                     
+                    # Verify match structure
+                    required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
+                    missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
+                    
+                    if missing_fields:
+                        print(f"⚠️ Missing required fields in match: {', '.join(missing_fields)}")
+                        success = False
+                    else:
+                        print("✅ Match has all required fields")
+                    
                     # Check odds
                     print(f"Odds team1: {sample_match.get('odds_team1')}")
                     print(f"Odds team2: {sample_match.get('odds_team2')}")
@@ -172,6 +182,7 @@ class SportPredictionsAPITester:
                     analysis = sample_match.get('analysis')
                     if analysis:
                         print(f"Analysis length: {len(analysis)} characters")
+                        print(f"Analysis sample: {analysis[:50]}...")
                     else:
                         print("⚠️ No analysis found for match")
                         success = False
@@ -201,6 +212,16 @@ class SportPredictionsAPITester:
                 print(f"Sample match: {sample_match.get('team1')} vs {sample_match.get('team2')}")
                 print(f"Match time: {sample_match.get('match_time')}")
                 
+                # Verify match structure
+                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
+                missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
+                
+                if missing_fields:
+                    print(f"⚠️ Missing required fields in match: {', '.join(missing_fields)}")
+                    success = False
+                else:
+                    print("✅ Match has all required fields")
+                
                 # Check odds
                 print(f"Odds team1: {sample_match.get('odds_team1')}")
                 print(f"Odds team2: {sample_match.get('odds_team2')}")
@@ -211,6 +232,7 @@ class SportPredictionsAPITester:
                 analysis = sample_match.get('analysis')
                 if analysis:
                     print(f"Analysis length: {len(analysis)} characters")
+                    print(f"Analysis sample: {analysis[:50]}...")
                 else:
                     print("⚠️ No analysis found for match")
                     success = False
@@ -258,6 +280,177 @@ class SportPredictionsAPITester:
                 else:
                     print("⚠️ No matches found after refresh")
                     success = False
+        
+        return success
+        
+    def test_update_daily_matches_endpoint(self):
+        """Test the update daily matches endpoint"""
+        success, response = self.run_test(
+            "Update Daily Matches Endpoint",
+            "POST",
+            "api/matches/update-daily",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Message: {response.get('message')}")
+            print(f"Total Matches: {response.get('total_matches')}")
+            print(f"Updated At: {response.get('updated_at')}")
+            
+            # Check if matches were returned in the response
+            matches = response.get('matches', [])
+            if matches:
+                print(f"✅ Daily update returned {len(matches)} matches")
+                
+                # Check sports distribution
+                sports_count = {}
+                for match in matches:
+                    sport = match.get('sport')
+                    if sport not in sports_count:
+                        sports_count[sport] = 0
+                    sports_count[sport] += 1
+                
+                print(f"Sports distribution: {sports_count}")
+            else:
+                print("⚠️ No matches returned in daily update response")
+                success = False
+        
+        return success
+    
+    def test_schedule_info_endpoint(self):
+        """Test the schedule info endpoint"""
+        success, response = self.run_test(
+            "Schedule Info Endpoint",
+            "GET",
+            "api/matches/schedule-info",
+            200
+        )
+        
+        if success:
+            print(f"Success: {response.get('success')}")
+            print(f"Message: {response.get('message')}")
+            
+            # Check schedule information
+            schedule = response.get('schedule', {})
+            if schedule:
+                print(f"Daily Match Update: {schedule.get('dailyMatchUpdate')}")
+                print(f"Old Match Cleanup: {schedule.get('oldMatchCleanup')}")
+                print(f"Timezone: {schedule.get('timezone')}")
+                
+                # Verify schedule is set for 12:00 MSK
+                if schedule.get('dailyMatchUpdate') == '12:00 МСК каждый день':
+                    print("✅ Schedule correctly set for 12:00 МСК daily")
+                else:
+                    print(f"⚠️ Schedule not set for 12:00 МСК: {schedule.get('dailyMatchUpdate')}")
+                    success = False
+                
+                # Verify timezone is Moscow
+                if schedule.get('timezone') == 'Europe/Moscow':
+                    print("✅ Timezone correctly set to Europe/Moscow")
+                else:
+                    print(f"⚠️ Timezone not set to Europe/Moscow: {schedule.get('timezone')}")
+                    success = False
+            else:
+                print("⚠️ No schedule information returned")
+                success = False
+            
+            # Check next update information
+            next_update = response.get('nextUpdate', {})
+            if next_update:
+                print(f"Next Update: {next_update.get('date')}")
+                print(f"Time Until: {next_update.get('timeUntil')}")
+            else:
+                print("⚠️ No next update information returned")
+                success = False
+        
+        return success
+
+    def test_match_data_structure(self):
+        """Test the match data structure in detail"""
+        success, response = self.run_test(
+            "Match Data Structure Test",
+            "GET",
+            "api/matches/today",
+            200
+        )
+        
+        if success:
+            matches = response.get('matches', {})
+            all_sports_present = True
+            
+            # Required sports
+            required_sports = ['football', 'baseball', 'hockey', 'esports']
+            
+            # Check each sport
+            for sport in required_sports:
+                sport_matches = matches.get(sport, [])
+                if not sport_matches:
+                    print(f"⚠️ No {sport} matches found")
+                    all_sports_present = False
+                    continue
+                
+                print(f"\n=== {sport.capitalize()} Match Structure ===")
+                sample_match = sport_matches[0]
+                
+                # Check required fields
+                required_fields = ['id', 'team1', 'team2', 'match_time', 'odds_team1', 'odds_team2', 'analysis', 'sport']
+                optional_fields = ['odds_draw', 'prediction', 'confidence_level', 'status']
+                
+                # Print all fields for inspection
+                print(f"Match ID: {sample_match.get('id')}")
+                print(f"Teams: {sample_match.get('team1')} vs {sample_match.get('team2')}")
+                print(f"Match Time: {sample_match.get('match_time')}")
+                print(f"Odds: {sample_match.get('odds_team1')} / {sample_match.get('odds_team2')}")
+                if sport == 'football':
+                    print(f"Draw Odds: {sample_match.get('odds_draw')}")
+                print(f"Analysis: {sample_match.get('analysis')[:100]}...")
+                
+                # Check for missing required fields
+                missing_fields = [field for field in required_fields if field not in sample_match or sample_match.get(field) is None]
+                if missing_fields:
+                    print(f"⚠️ Missing required fields: {', '.join(missing_fields)}")
+                    success = False
+                else:
+                    print("✅ All required fields present")
+                
+                # Check data types
+                if not isinstance(sample_match.get('odds_team1'), (int, float)):
+                    print(f"⚠️ odds_team1 is not a number: {sample_match.get('odds_team1')}")
+                    success = False
+                
+                if not isinstance(sample_match.get('odds_team2'), (int, float)):
+                    print(f"⚠️ odds_team2 is not a number: {sample_match.get('odds_team2')}")
+                    success = False
+                
+                if sport == 'football' and sample_match.get('odds_draw') is not None and not isinstance(sample_match.get('odds_draw'), (int, float)):
+                    print(f"⚠️ odds_draw is not a number: {sample_match.get('odds_draw')}")
+                    success = False
+                
+                # Check match time format
+                try:
+                    match_time = sample_match.get('match_time')
+                    if match_time:
+                        # Try to parse the date
+                        if 'T' in match_time:
+                            # ISO format
+                            datetime.fromisoformat(match_time.replace('Z', '+00:00'))
+                        else:
+                            # YYYY-MM-DD HH:MM:SS format
+                            datetime.strptime(match_time, '%Y-%m-%d %H:%M:%S')
+                        print("✅ Match time format is valid")
+                    else:
+                        print("⚠️ Match time is missing")
+                        success = False
+                except ValueError as e:
+                    print(f"⚠️ Invalid match time format: {match_time} - {str(e)}")
+                    success = False
+            
+            if all_sports_present:
+                print("\n✅ All required sports present in the response")
+            else:
+                print("\n⚠️ Some sports are missing from the response")
+                success = False
         
         return success
 
@@ -450,37 +643,45 @@ def main():
     # Run basic API tests
     print("\n=== Testing Basic API Endpoints ===")
     health_test = tester.test_health_endpoint()
-    stats_test = tester.test_stats_endpoint()
-    predictions_test = tester.test_predictions_endpoint()
     
-    # Test sport-specific endpoints
-    print("\n=== Testing Sport-Specific Endpoints ===")
-    baseball_stats_test = tester.test_sport_stats_endpoint("baseball")
-    football_stats_test = tester.test_sport_stats_endpoint("football")
-    hockey_stats_test = tester.test_sport_stats_endpoint("hockey")
-    esports_stats_test = tester.test_sport_stats_endpoint("esports")
-    telegram_stats_test = tester.test_telegram_stats_endpoint()
-    
-    # Test today's matches endpoints
-    print("\n=== Testing Today's Matches Endpoints ===")
+    # Test match parsing system
+    print("\n=== Testing Match Parsing System ===")
+    print("\n1. Testing Today's Matches Endpoint")
     today_matches_test = tester.test_today_matches_endpoint()
+    
+    print("\n2. Testing Sport-Specific Matches Endpoints")
     football_matches_test = tester.test_sport_matches_endpoint("football")
     baseball_matches_test = tester.test_sport_matches_endpoint("baseball")
     hockey_matches_test = tester.test_sport_matches_endpoint("hockey")
     esports_matches_test = tester.test_sport_matches_endpoint("esports")
+    
+    print("\n3. Testing Match Data Structure")
+    match_structure_test = tester.test_match_data_structure()
+    
+    print("\n4. Testing Refresh Matches Endpoint")
     refresh_matches_test = tester.test_refresh_matches_endpoint()
     
-    # Test authentication flow
-    print("\n=== Testing Authentication Flow ===")
-    registration_test = tester.test_user_registration()
-    login_test = tester.test_user_login()
-    login_without_at_test = tester.test_user_login_without_at_symbol()
-    profile_test = tester.test_user_profile()
-    password_change_test = tester.test_change_password()
-    logout_test = tester.test_logout()
+    print("\n5. Testing Update Daily Matches Endpoint")
+    update_daily_test = tester.test_update_daily_matches_endpoint()
+    
+    print("\n6. Testing Schedule Info Endpoint")
+    schedule_info_test = tester.test_schedule_info_endpoint()
     
     # Print results
     print(f"\n📊 Tests passed: {tester.tests_passed}/{tester.tests_run}")
+    
+    # Print summary of match parsing system tests
+    print("\n=== Match Parsing System Test Summary ===")
+    print(f"1. Today's Matches Endpoint: {'✅ PASSED' if today_matches_test else '❌ FAILED'}")
+    print(f"2. Sport-Specific Matches Endpoints:")
+    print(f"   - Football: {'✅ PASSED' if football_matches_test else '❌ FAILED'}")
+    print(f"   - Baseball: {'✅ PASSED' if baseball_matches_test else '❌ FAILED'}")
+    print(f"   - Hockey: {'✅ PASSED' if hockey_matches_test else '❌ FAILED'}")
+    print(f"   - Esports: {'✅ PASSED' if esports_matches_test else '❌ FAILED'}")
+    print(f"3. Match Data Structure: {'✅ PASSED' if match_structure_test else '❌ FAILED'}")
+    print(f"4. Refresh Matches Endpoint: {'✅ PASSED' if refresh_matches_test else '❌ FAILED'}")
+    print(f"5. Update Daily Matches Endpoint: {'✅ PASSED' if update_daily_test else '❌ FAILED'}")
+    print(f"6. Schedule Info Endpoint: {'✅ PASSED' if schedule_info_test else '❌ FAILED'}")
     
     # Return success if all tests passed
     return 0 if tester.tests_passed == tester.tests_run else 1
