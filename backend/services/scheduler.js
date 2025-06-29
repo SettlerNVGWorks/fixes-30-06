@@ -135,18 +135,19 @@ class Scheduler {
     }
   }
 
-  // Очистка старых матчей
+  // Очистка только старых матчей (не трогаем сегодняшние)
   async cleanupOldMatches() {
     try {
       const db = getDatabase();
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayString = yesterday.toISOString().split('T')[0];
+      const today = new Date();
+      today.setDate(today.getDate() - 2); // Удаляем матчи старше 2 дней
+      const cutoffDate = today.toISOString().split('T')[0];
       
-      await db.collection('matches').deleteMany({ 
-        match_date: { $lt: yesterdayString } 
+      const result = await db.collection('matches').deleteMany({ 
+        match_date: { $lt: cutoffDate } 
       });
-      console.log('✅ Старые матчи очищены');
+      
+      console.log(`✅ Удалено ${result.deletedCount} старых матчей (старше 2 дней)`);
     } catch (error) {
       console.error('❌ Ошибка при очистке старых матчей:', error);
     }
