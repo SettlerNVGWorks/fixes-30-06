@@ -7,6 +7,7 @@ require('dotenv').config();
 const { initDatabase } = require('./database');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
+const Scheduler = require('./services/scheduler');
 
 const app = express();
 const PORT = process.env.PORT || 8001;
@@ -54,6 +55,9 @@ app.use('/api/auth', authRoutes);
 // API routes (with /api prefix for consistency)
 app.use('/api', apiRoutes);
 
+// Initialize scheduler
+let scheduler;
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -70,10 +74,15 @@ const startServer = async () => {
   try {
     await initDatabase();
     
+    // Initialize scheduler for daily match updates
+    scheduler = new Scheduler();
+    console.log('⏰ Scheduler инициализирован для ежедневного обновления матчей');
+    
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on http://0.0.0.0:${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔧 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+      console.log(`📅 Матчи обновляются каждый день в 12:00 МСК`);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
