@@ -25,7 +25,7 @@ app.use(cors({
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'http://localhost:3000',
-    'https://1dbf1bf6-0d3e-45c6-bd18-4b73622e44a4.preview.emergentagent.com',
+    'https://968fc008-3b32-41d6-8af8-127569603ea2.preview.emergentagent.com',
     // Allow ngrok URLs
     /^https:\/\/.*\.ngrok\.io$/,
     /^https:\/\/.*\.ngrok-free\.app$/,
