@@ -785,11 +785,12 @@ class RealMatchParser {
     }
   }
 
-  // Fallback matches if all APIs fail
+  // Fallback matches if all APIs fail (2 per sport)
   async generateFallbackMatches() {
-    console.log('⚠️ Using fallback match generation');
+    console.log('⚠️ Using fallback match generation (2 per sport)');
     
     const fallbackMatches = [
+      // Football (2 matches)
       {
         sport: 'football',
         team1: 'Реал Мадрид',
@@ -801,12 +802,70 @@ class RealMatchParser {
         source: 'fallback'
       },
       {
+        sport: 'football',
+        team1: 'Манчестер Сити',
+        team2: 'Ливерпуль',
+        match_time: `${this.getTodayString().iso} 19:00:00`,
+        odds_team1: 1.9,
+        odds_team2: 3.5,
+        odds_draw: 3.2,
+        source: 'fallback'
+      },
+      // Hockey (2 matches)
+      {
         sport: 'hockey',
         team1: 'ЦСКА',
         team2: 'СКА',
         match_time: `${this.getTodayString().iso} 19:30:00`,
         odds_team1: 2.3,
         odds_team2: 2.8,
+        source: 'fallback'
+      },
+      {
+        sport: 'hockey',
+        team1: 'Динамо М',
+        team2: 'Спартак',
+        match_time: `${this.getTodayString().iso} 17:00:00`,
+        odds_team1: 2.5,
+        odds_team2: 2.4,
+        source: 'fallback'
+      },
+      // Baseball (2 matches)
+      {
+        sport: 'baseball',
+        team1: 'Yankees',
+        team2: 'Red Sox',
+        match_time: `${this.getTodayString().iso} 20:00:00`,
+        odds_team1: 1.8,
+        odds_team2: 2.9,
+        source: 'fallback'
+      },
+      {
+        sport: 'baseball',
+        team1: 'Dodgers',
+        team2: 'Giants',
+        match_time: `${this.getTodayString().iso} 22:00:00`,
+        odds_team1: 2.0,
+        odds_team2: 2.7,
+        source: 'fallback'
+      },
+      // Esports (2 matches)
+      {
+        sport: 'esports',
+        team1: 'Navi',
+        team2: 'Astralis',
+        match_time: `${this.getTodayString().iso} 16:00:00`,
+        odds_team1: 1.7,
+        odds_team2: 2.9,
+        source: 'fallback'
+      },
+      {
+        sport: 'esports',
+        team1: 'G2 Esports',
+        team2: 'FaZe Clan',
+        match_time: `${this.getTodayString().iso} 18:30:00`,
+        odds_team1: 2.2,
+        odds_team2: 2.4,
         source: 'fallback'
       }
     ];
@@ -816,6 +875,7 @@ class RealMatchParser {
       match.analysis = await this.getRandomAnalysisBySport(match.sport);
       match.match_date = this.getTodayString().iso;
       match.prediction = this.generatePrediction(match);
+      match.id = this.generateMatchId(match);
     }
     
     return fallbackMatches;
