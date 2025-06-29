@@ -1340,10 +1340,13 @@ class RealMatchParser {
     const source = match.source;
     
     // Real API sources get highest scores
-    if (source === 'mlb-statsapi') return 1.0; // 100% real
-    if (source === 'football-data-api') return 1.0; // 100% real
-    if (source === 'nhl-api') return 1.0; // 100% real
-    if (source === 'pandascore') return 1.0; // 100% real
+    if (source === 'mlb-statsapi') return 1.0; // 100% real MLB data
+    if (source === 'football-data-api') return 1.0; // 100% real football data
+    if (source === 'football-data-api-future') return 0.95; // 95% real (upcoming matches)
+    if (source === 'nhl-api') return 1.0; // 100% real NHL data
+    if (source === 'pandascore-api') return 1.0; // 100% real esports data
+    if (source === 'pandascore-upcoming') return 1.0; // 100% real esports data
+    if (source === 'pandascore-running') return 1.0; // 100% real live data
     if (source === 'free-football-api') return 0.9; // 90% real
     if (source === 'thesportsdb') return 0.8; // 80% real
     if (source === 'esports-tracker') return 0.8; // 80% real
@@ -1353,8 +1356,9 @@ class RealMatchParser {
     
     // Fallback data gets lower scores
     if (source === 'fallback') return 0.7; // 70% realistic
+    if (source === 'pandascore-adapted') return 0.8; // 80% realistic (real teams, adapted schedule)
     
-    return 0.5; // 50% for unknown sources
+    return 0.6; // 60% for unknown sources
   }
 
   // Get source type description for logging
