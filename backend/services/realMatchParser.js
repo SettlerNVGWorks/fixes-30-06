@@ -1545,13 +1545,16 @@ class RealMatchParser {
       }
     ];
     
-    // Add analysis and predictions
+    // Add analysis and predictions with team logos
     for (let match of fallbackMatches) {
       const baseAnalysis = await this.getRandomAnalysisBySport(match.sport);
       match.analysis = this.addBettingRecommendation(baseAnalysis, match);
       match.match_date = this.getTodayString().iso;
       match.prediction = this.generatePrediction(match);
       match.id = this.generateMatchId(match);
+      // Add team logos
+      match.logo_team1 = this.getTeamLogo(match.team1, match.sport);
+      match.logo_team2 = this.getTeamLogo(match.team2, match.sport);
     }
     
     return fallbackMatches;
