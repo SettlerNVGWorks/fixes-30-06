@@ -157,31 +157,135 @@ class SportPredictionsAPITester:
                     else:
                         print("❌ Match is missing status field")
                         success = False
+                    
+                    # Check for real data sources
+                    source = match.get('source', '')
+                    if sport == 'baseball':
+                        if source == 'mlb-statsapi':
+                            print(f"✅ Baseball match has correct source: {source}")
+                            # Check for gameId
+                            if 'gameId' in match:
+                                print(f"✅ Baseball match has gameId: {match.get('gameId')}")
+                            else:
+                                print("❌ Baseball match is missing gameId")
+                                success = False
+                        else:
+                            print(f"❌ Baseball match has incorrect source: {source}, expected 'mlb-statsapi'")
+                            success = False
+                    elif sport == 'hockey':
+                        valid_hockey_sources = ['balldontlie-nhl', 'nhl-api']
+                        if source in valid_hockey_sources:
+                            print(f"✅ Hockey match has correct source: {source}")
+                        else:
+                            print(f"❌ Hockey match has incorrect source: {source}, expected one of {valid_hockey_sources}")
+                            success = False
+                    elif sport == 'esports':
+                        if source == 'pandascore-api':
+                            print(f"✅ Esports match has correct source: {source}")
+                            # Check for match_id
+                            if 'match_id' in match:
+                                print(f"✅ Esports match has match_id: {match.get('match_id')}")
+                            else:
+                                print("❌ Esports match is missing match_id")
+                                success = False
+                        else:
+                            print(f"❌ Esports match has incorrect source: {source}, expected 'pandascore-api'")
+                            success = False
+                    elif sport == 'football':
+                        # Football should have 0 matches (off-season)
+                        print(f"❌ Found football match during off-season: {match.get('team1')} vs {match.get('team2')}")
+                        
+                        # Check if it's one of the fake matches
+                        fake_teams = ['Real Madrid', 'Barcelona', 'Manchester City', 'Liverpool']
+                        if match.get('team1') in fake_teams and match.get('team2') in fake_teams:
+                            print(f"❌ Found fake football match: {match.get('team1')} vs {match.get('team2')}")
+                            success = False
+                        
+                        # Check if source is api-football with fake matches
+                        if source == 'api-football':
+                            print(f"❌ Football match has incorrect source: {source} (should not be using api-football with fake matches)")
+                            success = False
             
             print(f"\nTotal Matches: {total_matches}")
             print(f"Sports Available: {sports_available}")
             
-            # Check if all 4 sports are available
-            required_sports = ['football', 'baseball', 'hockey', 'esports']
-            missing_sports = [sport for sport in required_sports if sport not in sports_available]
-            
-            if missing_sports:
-                print(f"❌ Missing sports: {', '.join(missing_sports)}")
-                success = False
+            # Check football matches (should be 0 in off-season)
+            football_matches = matches.get('football', [])
+            if len(football_matches) == 0:
+                print("✅ No football matches found (correct for off-season)")
             else:
-                print("✅ All required sports are available")
+                print(f"❌ Found {len(football_matches)} football matches during off-season")
+                success = False
+            
+            # Check baseball matches (should have real MLB matches)
+            baseball_matches = matches.get('baseball', [])
+            if len(baseball_matches) > 0:
+                print(f"✅ Found {len(baseball_matches)} baseball matches")
+                all_mlb = all(match.get('source') == 'mlb-statsapi' for match in baseball_matches)
+                if all_mlb:
+                    print("✅ All baseball matches are from MLB Stats API")
+                else:
+                    print("❌ Some baseball matches are not from MLB Stats API")
+                    success = False
+            else:
+                print("⚠️ No baseball matches found")
+            
+            # Check hockey matches (should have real NHL matches)
+            hockey_matches = matches.get('hockey', [])
+            if len(hockey_matches) > 0:
+                print(f"✅ Found {len(hockey_matches)} hockey matches")
+                valid_sources = ['balldontlie-nhl', 'nhl-api']
+                all_valid = all(match.get('source') in valid_sources for match in hockey_matches)
+                if all_valid:
+                    print(f"✅ All hockey matches are from valid sources: {valid_sources}")
+                else:
+                    print(f"❌ Some hockey matches are not from valid sources: {valid_sources}")
+                    success = False
+            else:
+                print("⚠️ No hockey matches found")
+            
+            # Check esports matches (should have real matches with match_id)
+            esports_matches = matches.get('esports', [])
+            if len(esports_matches) > 0:
+                print(f"✅ Found {len(esports_matches)} esports matches")
+                all_pandascore = all(match.get('source') == 'pandascore-api' for match in esports_matches)
+                if all_pandascore:
+                    print("✅ All esports matches are from PandaScore API")
+                else:
+                    print("❌ Some esports matches are not from PandaScore API")
+                    success = False
+            else:
+                print("⚠️ No esports matches found")
             
             # Check for mock data
             mock_sources = []
             for sport, sport_matches in matches.items():
                 for match in sport_matches:
-                    if match.get('source') == 'mock-generator':
+                    if match.get('source') in ['mock-generator', 'mock_parser']:
                         mock_sources.append(match)
             
             if not mock_sources:
                 print("✅ No mock data found - all matches are from real sources")
             else:
                 print(f"❌ Found {len(mock_sources)} matches with mock data")
+                success = False
+            
+            # Check for specific fake matches
+            fake_matches = []
+            for sport, sport_matches in matches.items():
+                for match in sport_matches:
+                    team1 = match.get('team1', '')
+                    team2 = match.get('team2', '')
+                    if ((team1 == 'Real Madrid' and team2 == 'Barcelona') or 
+                        (team1 == 'Barcelona' and team2 == 'Real Madrid') or
+                        (team1 == 'Manchester City' and team2 == 'Liverpool') or
+                        (team1 == 'Liverpool' and team2 == 'Manchester City')):
+                        fake_matches.append(f"{team1} vs {team2}")
+            
+            if not fake_matches:
+                print("✅ No fake matches found (Real Madrid vs Barcelona, Manchester City vs Liverpool)")
+            else:
+                print(f"❌ Found fake matches: {', '.join(fake_matches)}")
                 success = False
         
         return success
