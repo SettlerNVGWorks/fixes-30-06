@@ -572,9 +572,16 @@ class RealMatchParser {
   // Force refresh matches
   async forceRefreshMatches() {
     // Clear cache to force refresh
-    this.clearCache();
+    this.cache.clear();
+    console.log('🧹 Match parser cache cleared');
     console.log('🔄 Force refreshing matches...');
     return await this.getTodayMatches();
+  }
+  
+  // Clear cache
+  clearCache() {
+    this.cache.clear();
+    console.log('🧹 Match parser cache cleared');
   }
 }
 
