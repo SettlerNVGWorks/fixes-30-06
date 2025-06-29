@@ -641,8 +641,8 @@ class RealMatchParser {
         match_time: `${today.iso} ${hour}:00:00`,
         competition: match.league,
         source: 'realistic-fixture',
-        logo_team1: this.getTeamLogoUrl(match.team1, 'football'),
-        logo_team2: this.getTeamLogoUrl(match.team2, 'football')
+        logo_team1: await this.getTeamLogoUrl(match.team1, 'football'),
+        logo_team2: await this.getTeamLogoUrl(match.team2, 'football')
       };
     });
   }
