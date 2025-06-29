@@ -867,7 +867,7 @@ class RealMatchParser {
     });
   }
 
-  // Parse real hockey matches from NHL API
+  // Parse real hockey matches (NO MOCK DATA)
   async parseHockeyMatches() {
     const cacheKey = 'hockey_matches_today';
     
@@ -878,39 +878,53 @@ class RealMatchParser {
     try {
       let matches = [];
       
-      // For testing purposes, skip NHL API and try BALLDONTLIE NHL API first
-      console.log('⚠️ Skipping NHL API for testing, trying BALLDONTLIE NHL API...');
+      // Try NHL API first
+      if (this.canMakeApiCall('hockey')) {
+        try {
+          matches = await this.parseFromNHLAPI();
+          if (matches.length >= 2) {
+            console.log(`✅ Got ${matches.length} hockey matches from NHL API`);
+            this.setCacheData(cacheKey, matches);
+            return matches;
+          }
+        } catch (error) {
+          console.log('⚠️ NHL API failed, trying BALLDONTLIE NHL API...');
+        }
+      }
       
-      // Try new BALLDONTLIE NHL API as priority alternative
-      if (this.canMakeApiCall('hockeyBall') && this.apis.hockeyBall.key) {
-        matches = await this.parseFromBallDontLieNHL();
-        if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} hockey matches from BALLDONTLIE NHL API`);
-          this.setCacheData(cacheKey, matches);
-          return matches;
+      // Try BALLDONTLIE NHL API as backup
+      if (this.canMakeApiCall('hockeyBall') && this.apis.hockeyBall.key && matches.length < 2) {
+        try {
+          const ballMatches = await this.parseFromBallDontLieNHL();
+          matches = matches.concat(ballMatches);
+          if (matches.length >= 2) {
+            console.log(`✅ Got ${matches.length} hockey matches from BALLDONTLIE NHL API`);
+            this.setCacheData(cacheKey, matches);
+            return matches;
+          }
+        } catch (error) {
+          console.log('⚠️ BALLDONTLIE NHL API failed, trying SportsDB...');
         }
       }
 
-      // Try TheSportsDB as backup
-      if (this.canMakeApiCall('hockeyBackup')) {
-        matches = await this.parseFromSportsDB();
-        if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} hockey matches from SportsDB`);
-          this.setCacheData(cacheKey, matches);
-          return matches;
+      // Try TheSportsDB as final backup
+      if (this.canMakeApiCall('hockeyBackup') && matches.length < 2) {
+        try {
+          const sportsDbMatches = await this.parseFromSportsDB();
+          matches = matches.concat(sportsDbMatches);
+        } catch (error) {
+          console.log('⚠️ SportsDB failed');
         }
       }
 
-      // Generate realistic hockey matches based on real teams
-      matches = this.generateRealisticHockeyMatches();
-      console.log(`⚡ Generated ${matches.length} realistic hockey fixtures`);
-      
+      // NO FALLBACK TO MOCK DATA
+      console.log(`📊 Found ${matches.length} real hockey matches (no fallback to mock data)`);
       this.setCacheData(cacheKey, matches);
       return matches;
 
     } catch (error) {
       console.error('Error parsing hockey matches:', error);
-      return this.generateRealisticHockeyMatches();
+      return []; // Return empty array instead of mock data
     }
   }
 
