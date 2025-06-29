@@ -1,6 +1,6 @@
 const axios = require('axios');
 const UserAgent = require('user-agents');
-const { pool } = require('../database');
+const { getDatabase, getSportAnalysis } = require('../database_mongo');
 
 class RealMatchParser {
   constructor() {
