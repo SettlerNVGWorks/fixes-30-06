@@ -879,16 +879,9 @@ class RealMatchParser {
     try {
       let matches = [];
       
-      // Try NHL API first (official and free)
-      if (this.canMakeApiCall('hockey')) {
-        matches = await this.parseFromNHLAPI();
-        if (matches.length >= 2) {
-          console.log(`✅ Got ${matches.length} hockey matches from NHL API`);
-          this.setCacheData(cacheKey, matches);
-          return matches;
-        }
-      }
-
+      // For testing purposes, skip NHL API and try BALLDONTLIE NHL API first
+      console.log('⚠️ Skipping NHL API for testing, trying BALLDONTLIE NHL API...');
+      
       // Try new BALLDONTLIE NHL API as priority alternative
       if (this.canMakeApiCall('hockeyBall') && this.apis.hockeyBall.key) {
         matches = await this.parseFromBallDontLieNHL();
