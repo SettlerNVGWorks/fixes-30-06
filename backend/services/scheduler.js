@@ -202,17 +202,20 @@ class Scheduler {
   // Ручное обновление матчей (для тестирования)
   async manualUpdate() {
     console.log('🔧 Ручное обновление матчей...');
-    await this.updateDailyMatches();
+    await this.updateMatches('manual');
   }
 
   // Показать следующие запланированные задачи
   getScheduleInfo() {
     return {
-      dailyMatchUpdate: '12:00 МСК и 00:00 МСК каждый день',
-      oldMatchCleanup: '00:00 МСК каждый день',
+      morningUpdate: '09:00 МСК каждый день',
+      eveningUpdate: '19:00 МСК каждый день', 
+      oldMatchCleanup: '02:00 МСК каждый день',
       timezone: 'Europe/Moscow',
       matchesPerSport: 2,
-      totalMatchesPerDay: 8
+      maxMatchesPerDay: 8,
+      realDataOnly: true,
+      noMockData: true
     };
   }
 }
