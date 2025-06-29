@@ -110,7 +110,16 @@ class LogoService {
         return this.getCachedData(cacheKey);
       }
 
-      // Try multiple sources
+      // First try direct logo URLs for known teams
+      if (this.directLogos[teamName]) {
+        const directUrl = this.directLogos[teamName];
+        console.log(`✅ Using direct logo for ${teamName}: ${directUrl}`);
+        await this.saveLogoToDatabase(teamName, sport, directUrl);
+        this.setCacheData(cacheKey, directUrl);
+        return directUrl;
+      }
+
+      // Try multiple sources for unknown teams
       let logoUrl = await this.getLogoFromSportsDB(teamName, sport);
       
       if (!logoUrl) {
