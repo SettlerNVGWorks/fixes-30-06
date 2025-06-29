@@ -17,6 +17,14 @@ const teamLogos = {
   'AC Milan': 'https://logoeps.com/wp-content/uploads/2013/03/ac-milan-vector-logo.png',
   'Juventus': 'https://logoeps.com/wp-content/uploads/2013/03/juventus-vector-logo.png',
   'Napoli': 'https://logoeps.com/wp-content/uploads/2013/03/napoli-vector-logo.png',
+  'PSG': 'https://logos-world.net/wp-content/uploads/2020/06/PSG-Logo.png',
+  'Marseille': 'https://logoeps.com/wp-content/uploads/2013/03/marseille-vector-logo.png',
+  'Leicester City': 'https://logoeps.com/wp-content/uploads/2013/03/leicester-city-vector-logo.png',
+  'West Ham': 'https://logoeps.com/wp-content/uploads/2013/03/west-ham-vector-logo.png',
+  'Everton': 'https://logoeps.com/wp-content/uploads/2013/03/everton-vector-logo.png',
+  'Newcastle': 'https://logoeps.com/wp-content/uploads/2013/03/newcastle-vector-logo.png',
+  'Aston Villa': 'https://logoeps.com/wp-content/uploads/2013/03/aston-villa-vector-logo.png',
+  'Brighton': 'https://logoeps.com/wp-content/uploads/2013/03/brighton-vector-logo.png',
 
   // MLB Teams
   'New York Yankees': 'https://logosvector.net/wp-content/uploads/2022/04/new-york-yankees-logo-vector.png',
@@ -55,6 +63,30 @@ const teamLogos = {
   'Florida Panthers': 'https://logosvector.net/wp-content/uploads/2022/05/florida-panthers-logo-vector.png',
   'Pittsburgh Penguins': 'https://logosvector.net/wp-content/uploads/2022/05/pittsburgh-penguins-logo-vector.png',
   'Philadelphia Flyers': 'https://logosvector.net/wp-content/uploads/2022/05/philadelphia-flyers-logo-vector.png',
+  'Washington Capitals': 'https://logosvector.net/wp-content/uploads/2022/05/washington-capitals-logo-vector.png',
+  'Carolina Hurricanes': 'https://logosvector.net/wp-content/uploads/2022/05/carolina-hurricanes-logo-vector.png',
+  'New Jersey Devils': 'https://logosvector.net/wp-content/uploads/2022/05/new-jersey-devils-logo-vector.png',
+  'New York Islanders': 'https://logosvector.net/wp-content/uploads/2022/05/new-york-islanders-logo-vector.png',
+  'Columbus Blue Jackets': 'https://logosvector.net/wp-content/uploads/2022/05/columbus-blue-jackets-logo-vector.png',
+  'Detroit Red Wings': 'https://logosvector.net/wp-content/uploads/2022/05/detroit-red-wings-logo-vector.png',
+  'Nashville Predators': 'https://logosvector.net/wp-content/uploads/2022/05/nashville-predators-logo-vector.png',
+  'Chicago Blackhawks': 'https://logosvector.net/wp-content/uploads/2022/05/chicago-blackhawks-logo-vector.png',
+  'Dallas Stars': 'https://logosvector.net/wp-content/uploads/2022/05/dallas-stars-logo-vector.png',
+  'Colorado Avalanche': 'https://logosvector.net/wp-content/uploads/2022/05/colorado-avalanche-logo-vector.png',
+  'St. Louis Blues': 'https://logosvector.net/wp-content/uploads/2022/05/st-louis-blues-logo-vector.png',
+  'Minnesota Wild': 'https://logosvector.net/wp-content/uploads/2022/05/minnesota-wild-logo-vector.png',
+  'Vegas Golden Knights': 'https://logosvector.net/wp-content/uploads/2022/05/vegas-golden-knights-logo-vector.png',
+  'Seattle Kraken': 'https://logosvector.net/wp-content/uploads/2022/05/seattle-kraken-logo-vector.png',
+  'Calgary Flames': 'https://logosvector.net/wp-content/uploads/2022/05/calgary-flames-logo-vector.png',
+  'Edmonton Oilers': 'https://logosvector.net/wp-content/uploads/2022/05/edmonton-oilers-logo-vector.png',
+  'Vancouver Canucks': 'https://logosvector.net/wp-content/uploads/2022/05/vancouver-canucks-logo-vector.png',
+  'Los Angeles Kings': 'https://logosvector.net/wp-content/uploads/2022/05/los-angeles-kings-logo-vector.png',
+  'Anaheim Ducks': 'https://logosvector.net/wp-content/uploads/2022/05/anaheim-ducks-logo-vector.png',
+  'San Jose Sharks': 'https://logosvector.net/wp-content/uploads/2022/05/san-jose-sharks-logo-vector.png',
+  'Arizona Coyotes': 'https://logosvector.net/wp-content/uploads/2022/05/arizona-coyotes-logo-vector.png',
+  'Winnipeg Jets': 'https://logosvector.net/wp-content/uploads/2022/05/winnipeg-jets-logo-vector.png',
+  'Ottawa Senators': 'https://logosvector.net/wp-content/uploads/2022/05/ottawa-senators-logo-vector.png',
+  'Buffalo Sabres': 'https://logosvector.net/wp-content/uploads/2022/05/buffalo-sabres-logo-vector.png',
 
   // KHL Teams
   'ЦСКА Москва': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/CSKA_Moscow_logo.svg/200px-CSKA_Moscow_logo.svg.png',
@@ -63,9 +95,12 @@ const teamLogos = {
   'Спартак Москва': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/HC_Spartak_Moscow_logo.svg/200px-HC_Spartak_Moscow_logo.svg.png',
   'Авангард Омск': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Avangard_Omsk_logo.svg/200px-Avangard_Omsk_logo.svg.png',
   'Металлург Магнитогорск': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Metallurg_Magnitogorsk_logo.svg/200px-Metallurg_Magnitogorsk_logo.svg.png',
+  'Ак Барс Казань': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Ak_Bars_Kazan_logo.svg/200px-Ak_Bars_Kazan_logo.svg.png',
+  'Салават Юлаев Уфа': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Salavat_Yulaev_Ufa_logo.svg/200px-Salavat_Yulaev_Ufa_logo.svg.png',
 
   // Esports Teams
   'Natus Vincere': 'https://logoeps.com/wp-content/uploads/2022/12/natus-vincere-navi-vector-logo.png',
+  'Navi': 'https://logoeps.com/wp-content/uploads/2022/12/natus-vincere-navi-vector-logo.png',
   'Astralis': 'https://logoeps.com/wp-content/uploads/2022/12/astralis-vector-logo.png',
   'G2 Esports': 'https://logoeps.com/wp-content/uploads/2022/12/g2-esports-vector-logo.png',
   'FaZe Clan': 'https://logoeps.com/wp-content/uploads/2022/12/faze-clan-vector-logo.png',
@@ -84,7 +119,13 @@ const teamLogos = {
   'LOUD': 'https://logoeps.com/wp-content/uploads/2022/12/loud-vector-logo.png',
   'Gentle Mates': 'https://logoeps.com/wp-content/uploads/2022/12/gentle-mates-vector-logo.png',
   'Zoun': 'https://via.placeholder.com/100x100/FF6B6B/FFFFFF?text=ZN',
-  'Ryung': 'https://via.placeholder.com/100x100/4ECDC4/FFFFFF?text=RY'
+  'Ryung': 'https://via.placeholder.com/100x100/4ECDC4/FFFFFF?text=RY',
+  'Team Heretics': 'https://logoeps.com/wp-content/uploads/2022/12/team-heretics-vector-logo.png',
+  'NRG Esports': 'https://logoeps.com/wp-content/uploads/2022/12/nrg-esports-vector-logo.png',
+  'ENCE': 'https://logoeps.com/wp-content/uploads/2022/12/ence-vector-logo.png',
+  'BIG': 'https://logoeps.com/wp-content/uploads/2022/12/big-vector-logo.png',
+  'Mouz': 'https://logoeps.com/wp-content/uploads/2022/12/mousesports-vector-logo.png',
+  '100 Thieves': 'https://logoeps.com/wp-content/uploads/2022/12/100-thieves-vector-logo.png'
 };
 
 // Default sport logos for fallback
