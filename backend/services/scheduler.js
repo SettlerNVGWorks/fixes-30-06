@@ -1,5 +1,5 @@
 const cron = require('node-cron');
-const MatchParser = require('./matchParser');
+const RealMatchParser = require('./realMatchParser');
 
 class Scheduler {
   constructor() {
