@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const RealMatchParser = require('./realMatchParser');
+const { getDatabase } = require('../database_mongo');
 
 class Scheduler {
   constructor() {
