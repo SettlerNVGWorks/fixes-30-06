@@ -106,6 +106,8 @@ class RealMatchParser {
 
     if (apiName === 'football' && this.apis.football.key) {
       headers['X-Auth-Token'] = this.apis.football.key;
+    } else if (apiName === 'esports' && this.apis.esports.key) {
+      headers['Authorization'] = `Bearer ${this.apis.esports.key}`;
     }
 
     return axios.create({
