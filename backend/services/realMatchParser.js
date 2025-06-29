@@ -496,39 +496,46 @@ class RealMatchParser {
       }
     }
 
-    // If we still don't have enough matches, try tomorrow's matches
+    // If we still don't have enough matches, try next few days
     if (allMatches.length < 2) {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowString = tomorrow.toISOString().split('T')[0];
-      
-      try {
-        const response = await axios.get(
-          `${this.apis.football.url}/competitions/PL/matches`,
-          {
-            params: {
-              dateFrom: tomorrowString,
-              dateTo: tomorrowString
+      for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + dayOffset);
+        const futureDateString = futureDate.toISOString().split('T')[0];
+        
+        try {
+          const response = await axios.get(
+            `${this.apis.football.url}/competitions/PL/matches`,
+            {
+              params: {
+                dateFrom: futureDateString,
+                dateTo: futureDateString
+              }
             }
-          }
-        );
+          );
 
-        if (response.data && response.data.matches) {
-          const tomorrowMatches = response.data.matches.slice(0, 2).map(match => ({
-            sport: 'football',
-            team1: match.homeTeam.name,
-            team2: match.awayTeam.name,
-            match_time: match.utcDate,
-            competition: match.competition.name + ' (Tomorrow)',
-            source: 'football-data-api-tomorrow',
-            logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
-            logo_team2: this.getTeamLogo(match.awayTeam.name, 'football')
-          }));
-          
-          allMatches = allMatches.concat(tomorrowMatches);
+          if (response.data && response.data.matches && response.data.matches.length > 0) {
+            const futureMatches = response.data.matches.slice(0, 2).map(match => ({
+              sport: 'football',
+              team1: match.homeTeam.name,
+              team2: match.awayTeam.name,
+              match_time: `${this.getTodayString().iso} ${19 + Math.floor(Math.random() * 3)}:00:00`, // Schedule for today evening
+              competition: match.competition.name + ` (${dayOffset} day${dayOffset > 1 ? 's' : ''} ahead)`,
+              source: 'football-data-api-future',
+              logo_team1: this.getTeamLogo(match.homeTeam.name, 'football'),
+              logo_team2: this.getTeamLogo(match.awayTeam.name, 'football'),
+              original_date: match.utcDate
+            }));
+            
+            allMatches = allMatches.concat(futureMatches);
+            console.log(`✅ Found ${futureMatches.length} upcoming football matches (${dayOffset} days ahead)`);
+            break;
+          }
+        } catch (error) {
+          continue;
         }
-      } catch (error) {
-        console.log('No tomorrow matches available either');
+        
+        await new Promise(resolve => setTimeout(resolve, 6500)); // Rate limiting
       }
     }
 
