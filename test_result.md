@@ -388,6 +388,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "❌ ISSUE: The update schedule text in the header still shows old times '12:00 и 00:00 МСК' instead of the new required times '09:00 и 19:00 МСК'. However, the footer text correctly shows '09:00 и 19:00 МСК | Без мок-данных'. Match statuses (ЗАПЛАНИРОВАН/ИДЁТ МАТЧ/ЗАВЕРШЁН/ВОЗМОЖНО ИДЁТ) are implemented correctly with proper colors and icons. All 4 sports are displayed with their matches. Team logos, match times, and odds are displayed correctly. The refresh button works properly."
+      - working: true
+        agent: "main"
+        comment: "✅ FIXED: Update schedule text corrected from '12:00 и 00:00 МСК' to '09:00 и 19:00 МСК'. Added automatic team logo fetching system using LogoService. Enhanced match time parsing with proper Moscow timezone conversion. Team logos now automatically update during match refresh. Added comprehensive API endpoints for logo management."
 
 metadata:
   created_by: "main_agent"
