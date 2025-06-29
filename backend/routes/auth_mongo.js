@@ -5,7 +5,7 @@ const validator = require('validator');
 const crypto = require('crypto');
 const { getDatabase, createTelegramAuthSession, updateTelegramAuthSession, getTelegramAuthSession } = require('../database_mongo');
 const authMiddleware = require('../middleware_mongo');
-const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailServiceSendGrid');
 const { generateTelegramLoginUrl, handleAuthConfirmation } = require('../services/telegramService');
 
 const router = express.Router();
