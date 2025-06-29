@@ -214,9 +214,6 @@ const TodayMatches = () => {
               Обновлено: {lastUpdated.toLocaleTimeString('ru-RU')}
             </p>
           )}
-          <p className="text-xs text-gray-500 mt-2">
-            Матчи обновляются автоматически в 09:00 и 19:00 МСК
-          </p>
         </div>
 
         {/* Sports sections */}
