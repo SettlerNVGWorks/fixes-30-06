@@ -401,50 +401,295 @@ class RealMatchParser {
     }));
   }
 
-  // Generate matches for other sports (mock for now)
-  async generateOtherSportsMatches() {
+  // Parse real baseball matches from MLB StatsAPI
+  async parseBaseballMatches() {
+    const cacheKey = 'baseball_matches_today';
+    
+    if (this.isCacheValid(cacheKey)) {
+      return this.getCachedData(cacheKey);
+    }
+
+    try {
+      if (!this.canMakeApiCall('baseball')) {
+        console.log('Rate limit reached for MLB API, using cache or mock data');
+        return this.generateMockBaseballMatches();
+      }
+
+      const today = this.getTodayString();
+      const axios = this.getAxiosInstance();
+      
+      this.updateApiCallTime('baseball');
+      
+      const response = await axios.get(
+        `${this.apis.baseball.url}/schedule?sportId=1&date=${today.iso}`
+      );
+
+      let matches = [];
+      
+      if (response.data && response.data.dates && response.data.dates.length > 0) {
+        const games = response.data.dates[0].games || [];
+        
+        matches = games.map(game => ({
+          sport: 'baseball',
+          team1: game.teams.home.team.name,
+          team2: game.teams.away.team.name,
+          match_time: game.gameDate,
+          venue: game.venue.name,
+          competition: 'MLB',
+          source: 'mlb-statsapi'
+        }));
+      }
+
+      // If no matches found, generate mock data
+      if (matches.length === 0) {
+        matches = this.generateMockBaseballMatches();
+      }
+
+      this.setCacheData(cacheKey, matches);
+      return matches;
+
+    } catch (error) {
+      console.error('Error parsing baseball matches:', error);
+      return this.generateMockBaseballMatches();
+    }
+  }
+
+  // Parse real hockey matches
+  async parseHockeyMatches() {
+    const cacheKey = 'hockey_matches_today';
+    
+    if (this.isCacheValid(cacheKey)) {
+      return this.getCachedData(cacheKey);
+    }
+
+    try {
+      if (!this.canMakeApiCall('hockey')) {
+        console.log('Rate limit reached for Hockey API, using cache or mock data');
+        return this.generateMockHockeyMatches();
+      }
+
+      const today = this.getTodayString();
+      const axios = this.getAxiosInstance();
+      
+      this.updateApiCallTime('hockey');
+      
+      // Get NHL schedule from TheSportsDB
+      const response = await axios.get(
+        `${this.apis.hockey.url}/${this.apis.hockey.key}/eventsday.php?d=${today.iso}&s=Ice_Hockey`
+      );
+
+      let matches = [];
+      
+      if (response.data && response.data.events && response.data.events.length > 0) {
+        matches = response.data.events
+          .filter(event => event.strLeague === 'NHL')
+          .map(event => ({
+            sport: 'hockey',
+            team1: event.strHomeTeam,
+            team2: event.strAwayTeam,
+            match_time: `${event.dateEvent} ${event.strTime}`,
+            venue: event.strVenue,
+            competition: event.strLeague,
+            source: 'thesportsdb'
+          }));
+      }
+
+      // If no NHL matches, try to get KHL or other leagues
+      if (matches.length === 0) {
+        const allEvents = response.data?.events || [];
+        matches = allEvents
+          .filter(event => event.strSport === 'Ice Hockey')
+          .slice(0, 3) // Limit to 3 matches
+          .map(event => ({
+            sport: 'hockey',
+            team1: event.strHomeTeam || 'Команда А',
+            team2: event.strAwayTeam || 'Команда Б',
+            match_time: `${event.dateEvent} ${event.strTime || '20:00'}`,
+            venue: event.strVenue,
+            competition: event.strLeague || 'Hockey League',
+            source: 'thesportsdb'
+          }));
+      }
+
+      // If still no matches, generate mock data
+      if (matches.length === 0) {
+        matches = this.generateMockHockeyMatches();
+      }
+
+      this.setCacheData(cacheKey, matches);
+      return matches;
+
+    } catch (error) {
+      console.error('Error parsing hockey matches:', error);
+      return this.generateMockHockeyMatches();
+    }
+  }
+
+  // Parse real esports matches
+  async parseEsportsMatches() {
+    const cacheKey = 'esports_matches_today';
+    
+    if (this.isCacheValid(cacheKey)) {
+      return this.getCachedData(cacheKey);
+    }
+
+    try {
+      if (!this.canMakeApiCall('esports') || !this.apis.esports.key) {
+        console.log('Rate limit reached or no API key for Esports API, using mock data');
+        return this.generateMockEsportsMatches();
+      }
+
+      const today = this.getTodayString();
+      const axios = this.getAxiosInstance('esports');
+      
+      this.updateApiCallTime('esports');
+      
+      // Get matches from PandaScore API
+      const response = await axios.get(
+        `${this.apis.esports.url}/matches/running`,
+        {
+          headers: {
+            'Authorization': `Bearer ${this.apis.esports.key}`
+          },
+          params: {
+            sort: 'begin_at',
+            page: 1,
+            per_page: 10
+          }
+        }
+      );
+
+      let matches = [];
+      
+      if (response.data && response.data.length > 0) {
+        matches = response.data
+          .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
+          .slice(0, 4) // Limit to 4 matches
+          .map(match => ({
+            sport: 'esports',
+            team1: match.opponents[0].opponent.name,
+            team2: match.opponents[1].opponent.name,
+            match_time: match.begin_at || `${today.iso} 18:00:00`,
+            game: match.videogame.name,
+            competition: match.league?.name || 'Esports Tournament',
+            source: 'pandascore'
+          }));
+      }
+
+      // If no matches found, generate mock data
+      if (matches.length === 0) {
+        matches = this.generateMockEsportsMatches();
+      }
+
+      this.setCacheData(cacheKey, matches);
+      return matches;
+
+    } catch (error) {
+      console.error('Error parsing esports matches:', error);
+      return this.generateMockEsportsMatches();
+    }
+  }
+
+  // Generate mock hockey matches as fallback
+  generateMockHockeyMatches() {
+    const teams = [
+      'ЦСКА', 'СКА', 'Динамо М', 'Спартак', 'Авангард', 'Металлург', 'Ак Барс', 'Торпедо',
+      'Rangers', 'Bruins', 'Penguins', 'Blackhawks'
+    ];
+    
+    const matches = [];
     const today = this.getTodayString();
     
-    const sportsData = {
-      hockey: {
-        teams: ['ЦСКА', 'СКА', 'Динамо М', 'Спартак', 'Авангард', 'Металлург', 'Ак Барс', 'Торпедо'],
-        count: 2
-      },
-      baseball: {
-        teams: ['Yankees', 'Red Sox', 'Dodgers', 'Giants', 'Astros', 'Phillies', 'Mets', 'Cubs'],
-        count: 2
-      },
-      esports: {
-        teams: ['Navi', 'Astralis', 'G2', 'Fnatic', 'FaZe', 'Liquid', 'Cloud9', 'MOUZ'],
-        count: 2
+    for (let i = 0; i < 2; i++) {
+      const team1 = teams[Math.floor(Math.random() * teams.length)];
+      let team2 = teams[Math.floor(Math.random() * teams.length)];
+      while (team2 === team1) {
+        team2 = teams[Math.floor(Math.random() * teams.length)];
       }
-    };
-
-    const allMatches = [];
-    
-    for (const [sport, data] of Object.entries(sportsData)) {
-      for (let i = 0; i < data.count; i++) {
-        const team1 = data.teams[Math.floor(Math.random() * data.teams.length)];
-        let team2 = data.teams[Math.floor(Math.random() * data.teams.length)];
-        while (team2 === team1) {
-          team2 = data.teams[Math.floor(Math.random() * data.teams.length)];
-        }
-        
-        const hour = 16 + Math.floor(Math.random() * 6);
-        const minute = Math.floor(Math.random() * 2) * 30;
-        const matchTime = `${today.iso} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
-        
-        allMatches.push({
-          sport: sport,
-          team1: team1,
-          team2: team2,
-          match_time: matchTime,
-          source: 'sport-generator'
-        });
-      }
+      
+      const hour = 19 + i * 2;
+      const matchTime = `${today.iso} ${hour}:30:00`;
+      
+      matches.push({
+        sport: 'hockey',
+        team1: team1,
+        team2: team2,
+        match_time: matchTime,
+        competition: 'NHL/KHL',
+        source: 'mock-generator'
+      });
     }
     
-    return allMatches;
+    return matches;
+  }
+
+  // Generate mock baseball matches as fallback
+  generateMockBaseballMatches() {
+    const teams = [
+      'Yankees', 'Red Sox', 'Dodgers', 'Giants', 'Astros', 'Phillies', 'Mets', 
+      'Cubs', 'Cardinals', 'Braves', 'Blue Jays', 'Angels'
+    ];
+    
+    const matches = [];
+    const today = this.getTodayString();
+    
+    for (let i = 0; i < 2; i++) {
+      const team1 = teams[Math.floor(Math.random() * teams.length)];
+      let team2 = teams[Math.floor(Math.random() * teams.length)];
+      while (team2 === team1) {
+        team2 = teams[Math.floor(Math.random() * teams.length)];
+      }
+      
+      const hour = 20 + i * 2;
+      const matchTime = `${today.iso} ${hour}:00:00`;
+      
+      matches.push({
+        sport: 'baseball',
+        team1: team1,
+        team2: team2,
+        match_time: matchTime,
+        competition: 'MLB',
+        source: 'mock-generator'
+      });
+    }
+    
+    return matches;
+  }
+
+  // Generate mock esports matches as fallback  
+  generateMockEsportsMatches() {
+    const teams = [
+      'Navi', 'Astralis', 'G2 Esports', 'Fnatic', 'FaZe Clan', 'Team Liquid',
+      'Cloud9', 'MOUZ', 'Vitality', 'NIP', 'ENCE', 'BIG'
+    ];
+    
+    const games = ['CS:GO', 'Dota 2', 'League of Legends', 'Valorant'];
+    
+    const matches = [];
+    const today = this.getTodayString();
+    
+    for (let i = 0; i < 2; i++) {
+      const team1 = teams[Math.floor(Math.random() * teams.length)];
+      let team2 = teams[Math.floor(Math.random() * teams.length)];
+      while (team2 === team1) {
+        team2 = teams[Math.floor(Math.random() * teams.length)];
+      }
+      
+      const hour = 16 + i * 3;
+      const matchTime = `${today.iso} ${hour}:00:00`;
+      
+      matches.push({
+        sport: 'esports',
+        team1: team1,
+        team2: team2,
+        match_time: matchTime,
+        game: games[Math.floor(Math.random() * games.length)],
+        competition: 'Major Tournament',
+        source: 'mock-generator'
+      });
+    }
+    
+    return matches;
   }
 
   // Main function to get all today's matches
