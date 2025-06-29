@@ -613,29 +613,14 @@ class RealMatchParser {
   async parseFromFreeFootballAPI() {
     console.log('🔍 Testing Free Football API backup source...');
     
-    // For testing purposes, return mock data
-    return [
-      {
-        sport: 'football',
-        team1: 'Bayern Munich',
-        team2: 'Borussia Dortmund',
-        match_time: `${this.getTodayString().iso} 20:30:00`,
-        competition: 'Bundesliga',
-        source: 'free-football-api',
-        logo_team1: await this.getTeamLogoUrl('Bayern Munich', 'football'),
-        logo_team2: await this.getTeamLogoUrl('Borussia Dortmund', 'football')
-      },
-      {
-        sport: 'football',
-        team1: 'Inter Milan',
-        team2: 'AC Milan',
-        match_time: `${this.getTodayString().iso} 18:00:00`,
-        competition: 'Serie A',
-        source: 'free-football-api',
-        logo_team1: await this.getTeamLogoUrl('Inter Milan', 'football'),
-        logo_team2: await this.getTeamLogoUrl('AC Milan', 'football')
-      }
-    ];
+    try {
+      // Try to fetch from free football API - currently just return empty as most free APIs are unreliable
+      console.log('⚠️ Free Football API not implemented - would need reliable free source');
+      return [];
+    } catch (error) {
+      console.error('Free Football API error:', error.message);
+      return [];
+    }
   }
 
   // Generate realistic football matches based on current leagues
