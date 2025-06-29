@@ -1153,27 +1153,40 @@ class RealMatchParser {
       let matches = [];
       
       if (upcomingResponse.data && upcomingResponse.data.length > 0) {
-        matches = upcomingResponse.data
-          .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
-          .slice(0, 4)
-          .map((match) => {
-            return {
-              sport: 'esports',
-              team1: match.opponents[0].opponent.name,
-              team2: match.opponents[1].opponent.name,
-              match_time: match.begin_at || match.scheduled_at, // Use REAL time from API
-              game: match.videogame.name,
-              competition: match.league?.name || match.tournament?.name || 'Tournament',
-              tournament_tier: match.tournament?.tier,
-              bo_type: match.number_of_games ? `BO${match.number_of_games}` : 'BO3',
-              source: 'pandascore-api',
-              logo_team1: this.getTeamLogoUrl(match.opponents[0].opponent.name, 'esports'),
-              logo_team2: this.getTeamLogoUrl(match.opponents[1].opponent.name, 'esports'),
-              match_id: match.id
-            };
-          });
-          
-        console.log(`✅ PandaScore API returned ${matches.length} real esports matches with real times`);
+        const processedMatches = await Promise.all(
+          upcomingResponse.data
+            .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
+            .slice(0, 4)
+            .map(async (match) => {
+              // Fix time conversion
+              let matchTime = match.begin_at || match.scheduled_at;
+              if (!this.isTimeRealistic(matchTime)) {
+                matchTime = this.convertToMoscowTime(matchTime);
+              }
+              
+              // Get logos automatically
+              const logo1 = await this.getTeamLogoUrl(match.opponents[0].opponent.name, 'esports');
+              const logo2 = await this.getTeamLogoUrl(match.opponents[1].opponent.name, 'esports');
+              
+              return {
+                sport: 'esports',
+                team1: match.opponents[0].opponent.name,
+                team2: match.opponents[1].opponent.name,
+                match_time: matchTime, // Fixed time
+                game: match.videogame.name,
+                competition: match.league?.name || match.tournament?.name || 'Tournament',
+                tournament_tier: match.tournament?.tier,
+                bo_type: match.number_of_games ? `BO${match.number_of_games}` : 'BO3',
+                source: 'pandascore-api',
+                logo_team1: logo1,
+                logo_team2: logo2,
+                match_id: match.id
+              };
+            })
+        );
+        
+        matches = processedMatches;
+        console.log(`✅ PandaScore API returned ${matches.length} real esports matches with fixed times and auto-logos`);
       }
 
       return matches;
