@@ -501,12 +501,16 @@ class SportPredictionsAPITester:
                 success = False
             
             # Check next update information
-            next_update = response.get('nextUpdate', {})
-            if next_update:
-                print(f"Next Update: {next_update.get('date')}")
-                print(f"Time Until: {next_update.get('timeUntil')}")
+            next_updates = response.get('next_updates', [])
+            if next_updates and len(next_updates) == 2:
+                print(f"Next Updates: {next_updates}")
+                if '09:00 МСК' in next_updates[0] and '19:00 МСК' in next_updates[1]:
+                    print("✅ Next updates correctly set for 09:00 and 19:00 МСК")
+                else:
+                    print(f"❌ Next updates not set correctly: {next_updates}")
+                    success = False
             else:
-                print("❌ No next update information returned")
+                print("❌ No next updates information returned or incorrect number of updates")
                 success = False
         
         return success
