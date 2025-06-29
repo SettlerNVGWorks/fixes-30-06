@@ -328,6 +328,56 @@ router.get('/matches/schedule-info', (req, res) => {
   }
 });
 
+// Manual daily update endpoint (for testing scheduler)
+router.post('/matches/update-daily', async (req, res) => {
+  try {
+    // Import scheduler here to avoid circular dependency
+    const Scheduler = require('../services/scheduler');
+    const scheduler = new Scheduler();
+    
+    console.log('🔧 Запуск ручного ежедневного обновления матчей...');
+    await scheduler.manualUpdate();
+    
+    // Get fresh matches to return
+    const freshMatches = await matchParser.getTodayMatches();
+    
+    res.json({
+      success: true,
+      message: 'Ежедневное обновление матчей выполнено успешно',
+      total_matches: freshMatches.length,
+      updated_at: new Date().toISOString(),
+      matches: freshMatches
+    });
+  } catch (error) {
+    console.error('Manual daily update error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Ошибка ручного обновления матчей' 
+    });
+  }
+});
+
+// Get scheduler info
+router.get('/matches/schedule-info', (req, res) => {
+  try {
+    const Scheduler = require('../services/scheduler');
+    const scheduler = new Scheduler();
+    const scheduleInfo = scheduler.getScheduleInfo();
+    
+    res.json({
+      success: true,
+      schedule: scheduleInfo,
+      message: 'Информация о расписании обновления матчей'
+    });
+  } catch (error) {
+    console.error('Schedule info error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Ошибка получения информации о расписании' 
+    });
+  }
+});
+
 // Get matches by specific sport
 router.get('/matches/sport/:sport', async (req, res) => {
   try {
