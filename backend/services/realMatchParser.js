@@ -1026,8 +1026,8 @@ class RealMatchParser {
               tournament_tier: match.tournament?.tier,
               bo_type: match.number_of_games ? `BO${match.number_of_games}` : 'BO3',
               source: 'pandascore-api',
-              logo_team1: this.getTeamLogo(match.opponents[0].opponent.name, 'esports'),
-              logo_team2: this.getTeamLogo(match.opponents[1].opponent.name, 'esports'),
+              logo_team1: this.getTeamLogoUrl(match.opponents[0].opponent.name, 'esports'),
+              logo_team2: this.getTeamLogoUrl(match.opponents[1].opponent.name, 'esports'),
               match_id: match.id,
               original_time: match.begin_at
             };
