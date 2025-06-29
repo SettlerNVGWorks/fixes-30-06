@@ -58,6 +58,9 @@ app.use('/api/auth', authRoutes);
 // API routes (with /api prefix for consistency)
 app.use('/api', apiRoutes);
 
+// Telegram webhook routes
+app.use('/api/telegram', telegramRoutes);
+
 // Initialize scheduler
 let scheduler;
 
