@@ -491,10 +491,10 @@ class SportPredictionsAPITester:
                     success = False
                 
                 # Verify total matches per day is 8
-                if schedule.get('totalMatchesPerDay') == 8:
-                    print("✅ Total matches per day correctly set to 8")
+                if schedule.get('matchesPerSport') == 2 and schedule.get('maxMatchesPerDay') == 8:
+                    print("✅ Total matches per day correctly set to 8 (2 per sport)")
                 else:
-                    print(f"❌ Total matches per day not set to 8: {schedule.get('totalMatchesPerDay')}")
+                    print(f"❌ Total matches per day not set correctly: {schedule.get('matchesPerSport')} per sport, {schedule.get('maxMatchesPerDay')} total")
                     success = False
             else:
                 print("❌ No schedule information returned")
