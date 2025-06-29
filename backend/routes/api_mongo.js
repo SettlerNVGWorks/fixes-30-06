@@ -350,30 +350,18 @@ router.post('/matches/update-daily', async (req, res) => {
 router.get('/matches/sport/:sport', async (req, res) => {
   try {
     const { sport } = req.params;
-    const validSports = ['football', 'hockey', 'baseball', 'esports'];
-    
-    if (!validSports.includes(sport.toLowerCase())) {
-      return res.status(400).json({
-        success: false,
-        error: 'Неподдерживаемый вид спорта',
-        available_sports: validSports
-      });
-    }
-
     const matches = await matchParser.getMatchesBySport(sport.toLowerCase());
     
     res.json({
       success: true,
       sport: sport,
-      total_matches: matches.length,
-      matches: matches
+      matches: matches,
+      count: matches.length,
+      real_data_only: true
     });
   } catch (error) {
-    console.error(`Sport matches error:`, error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Ошибка получения матчей по спорту'
-    });
+    console.error('Sport matches error:', error);
+    res.status(500).json({ error: 'Ошибка получения матчей по спорту' });
   }
 });
 
