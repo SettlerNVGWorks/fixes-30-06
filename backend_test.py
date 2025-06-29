@@ -466,11 +466,11 @@ class SportPredictionsAPITester:
                 print(f"Matches Per Sport: {schedule.get('matchesPerSport')}")
                 print(f"Total Matches Per Day: {schedule.get('totalMatchesPerDay')}")
                 
-                # Verify schedule is set for 12:00 MSK
-                if '12:00 МСК' in schedule.get('dailyMatchUpdate', ''):
-                    print("✅ Schedule correctly set for 12:00 МСК daily")
+                # Verify schedule is set for 09:00 and 19:00 MSK
+                if '09:00 МСК' in schedule.get('morningUpdate', '') and '19:00 МСК' in schedule.get('eveningUpdate', ''):
+                    print("✅ Schedule correctly set for 09:00 МСК (morning) and 19:00 МСК (evening)")
                 else:
-                    print(f"❌ Schedule not set for 12:00 МСК: {schedule.get('dailyMatchUpdate')}")
+                    print(f"❌ Schedule not set correctly: Morning: {schedule.get('morningUpdate')}, Evening: {schedule.get('eveningUpdate')}")
                     success = False
                 
                 # Verify timezone is Moscow
