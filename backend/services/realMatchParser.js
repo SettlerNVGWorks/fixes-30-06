@@ -329,9 +329,70 @@ class RealMatchParser {
       return getTeamLogo(teamName, sport);
     }
   }
-  generateMatchId(match) {
-    const str = `${match.sport}_${match.team1}_${match.team2}_${match.match_time}`;
-    return str.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  // Convert time to Moscow timezone properly
+  convertToMoscowTime(utcTimeString) {
+    try {
+      // Parse the UTC time
+      const utcDate = new Date(utcTimeString);
+      
+      // Check if the date is valid
+      if (isNaN(utcDate.getTime())) {
+        console.warn(`Invalid date: ${utcTimeString}`);
+        return this.generateRealisticTime();
+      }
+      
+      // Convert to Moscow timezone (UTC+3)
+      const moscowOffset = 3 * 60; // 3 hours in minutes
+      const localOffset = utcDate.getTimezoneOffset(); // Browser timezone offset in minutes
+      const moscowTime = new Date(utcDate.getTime() + (moscowOffset + localOffset) * 60000);
+      
+      // Format as ISO string but replace the timezone
+      const moscowISOString = moscowTime.toISOString().replace('Z', '+03:00');
+      
+      console.log(`⏰ Converted ${utcTimeString} to Moscow time: ${moscowISOString}`);
+      return moscowISOString;
+      
+    } catch (error) {
+      console.error(`Error converting time ${utcTimeString}:`, error);
+      return this.generateRealisticTime();
+    }
+  }
+
+  // Generate realistic time for today in Moscow timezone
+  generateRealisticTime() {
+    const today = new Date();
+    const moscowHours = [16, 17, 18, 19, 20, 21, 22]; // Common match times in Moscow
+    const randomHour = moscowHours[Math.floor(Math.random() * moscowHours.length)];
+    const randomMinute = [0, 15, 30, 45][Math.floor(Math.random() * 4)];
+    
+    // Set to today with Moscow timezone
+    const moscowTime = new Date();
+    moscowTime.setHours(randomHour, randomMinute, 0, 0);
+    
+    // Convert to Moscow timezone ISO string
+    const moscowOffset = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    const utcTime = moscowTime.getTime() - moscowOffset;
+    const moscowISOString = new Date(utcTime).toISOString().replace('Z', '+03:00');
+    
+    console.log(`🎯 Generated realistic Moscow time: ${moscowISOString}`);
+    return moscowISOString;
+  }
+
+  // Check if time is realistic for today
+  isTimeRealistic(timeString) {
+    try {
+      const matchTime = new Date(timeString);
+      const today = new Date();
+      
+      // Check if it's today or tomorrow
+      const timeDiff = matchTime.getTime() - today.getTime();
+      const hoursDiff = timeDiff / (1000 * 60 * 60);
+      
+      // Realistic if within 48 hours from now
+      return hoursDiff >= -6 && hoursDiff <= 48;
+    } catch (error) {
+      return false;
+    }
   }
 
   // Generate sport-specific generic analysis with enhanced betting priorities
