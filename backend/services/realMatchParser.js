@@ -632,19 +632,26 @@ class RealMatchParser {
     const selectedMatches = realTeams.sort(() => 0.5 - Math.random()).slice(0, 2);
     const today = this.getTodayString();
     
-    return selectedMatches.map((match, index) => {
+    const result = [];
+    for (const match of selectedMatches) {
+      const index = selectedMatches.indexOf(match);
       const hour = 19 + index * 2;
-      return {
+      const logo1 = await this.getTeamLogoUrl(match.team1, 'football');
+      const logo2 = await this.getTeamLogoUrl(match.team2, 'football');
+      
+      result.push({
         sport: 'football',
         team1: match.team1,
         team2: match.team2,
         match_time: `${today.iso} ${hour}:00:00`,
         competition: match.league,
         source: 'realistic-fixture',
-        logo_team1: await this.getTeamLogoUrl(match.team1, 'football'),
-        logo_team2: await this.getTeamLogoUrl(match.team2, 'football')
-      };
-    });
+        logo_team1: logo1,
+        logo_team2: logo2
+      });
+    }
+    
+    return result;
   }
 
   // Generate mock football matches as fallback
