@@ -7,6 +7,7 @@ require('dotenv').config();
 const { initDatabase } = require('./database_mongo');
 const authRoutes = require('./routes/auth_mongo');
 const apiRoutes = require('./routes/api_mongo');
+const telegramRoutes = require('./routes/telegram_webhook');
 const Scheduler = require('./services/scheduler');
 
 const app = express();
