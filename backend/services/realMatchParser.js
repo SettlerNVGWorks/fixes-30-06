@@ -767,7 +767,7 @@ class RealMatchParser {
     }));
   }
 
-  // Parse real baseball matches from MLB StatsAPI (most reliable)
+  // Parse real baseball matches from MLB StatsAPI (most reliable, NO MOCK DATA)
   async parseBaseballMatches() {
     const cacheKey = 'baseball_matches_today';
     
@@ -777,8 +777,8 @@ class RealMatchParser {
 
     try {
       if (!this.canMakeApiCall('baseball')) {
-        console.log('Rate limit reached for MLB API, using realistic generation');
-        return this.generateRealisticBaseballMatches();
+        console.log('Rate limit reached for MLB API');
+        return []; // Return empty instead of mock data
       }
 
       const today = this.getTodayString();
@@ -795,24 +795,25 @@ class RealMatchParser {
       if (response.data && response.data.dates && response.data.dates.length > 0) {
         const games = response.data.dates[0].games || [];
         
-        matches = games.map(game => ({
+        matches = games.slice(0, 2).map(game => ({
           sport: 'baseball',
           team1: game.teams.home.team.name,
           team2: game.teams.away.team.name,
-          match_time: game.gameDate,
+          match_time: game.gameDate, // Keep REAL time from API
           venue: game.venue.name,
           competition: 'MLB',
           source: 'mlb-statsapi',
-          gameId: game.gamePk // Real game ID for verification
+          gameId: game.gamePk, // Real game ID for verification
+          logo_team1: this.getTeamLogoUrl(game.teams.home.team.name, 'baseball'),
+          logo_team2: this.getTeamLogoUrl(game.teams.away.team.name, 'baseball')
         }));
         
         console.log(`✅ Found ${matches.length} real MLB games for today`);
       }
 
-      // If no MLB games today, generate realistic fixtures
+      // NO FALLBACK TO MOCK DATA - return empty if no real games
       if (matches.length === 0) {
-        console.log('⚠️ No MLB games today, generating realistic fixtures');
-        matches = this.generateRealisticBaseballMatches();
+        console.log('⚠️ No real MLB games today, returning empty array (no mock data)');
       }
 
       this.setCacheData(cacheKey, matches);
@@ -820,7 +821,7 @@ class RealMatchParser {
 
     } catch (error) {
       console.error('Error parsing baseball matches:', error);
-      return this.generateRealisticBaseballMatches();
+      return []; // Return empty array instead of mock data
     }
   }
 
