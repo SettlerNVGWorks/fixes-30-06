@@ -270,7 +270,14 @@ router.get('/matches/today', async (req, res) => {
         prediction: match.prediction,
         sport: match.sport,
         status: match.status,
-        confidence_level: match.confidence_level
+        confidence_level: match.confidence_level,
+        source: match.source,
+        competition: match.competition,
+        logo_team1: match.logo_team1,
+        logo_team2: match.logo_team2,
+        realism_score: match.realism_score,
+        game: match.game, // For esports
+        venue: match.venue
       });
       return acc;
     }, {});
