@@ -136,7 +136,14 @@ class Scheduler {
   // Очистка старых матчей
   async cleanupOldMatches() {
     try {
-      await this.matchParser.clearOldMatches();
+      const db = getDatabase();
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayString = yesterday.toISOString().split('T')[0];
+      
+      await db.collection('matches').deleteMany({ 
+        match_date: { $lt: yesterdayString } 
+      });
       console.log('✅ Старые матчи очищены');
     } catch (error) {
       console.error('❌ Ошибка при очистке старых матчей:', error);
