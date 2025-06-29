@@ -825,10 +825,11 @@ class RealMatchParser {
           { 
             team1: match.team1,
             team2: match.team2,
-            match_time: match.match_time
+            match_date: match.match_date
           },
           { 
             $set: {
+              id: match.id || this.generateMatchId(match),
               sport: match.sport,
               team1: match.team1,
               team2: match.team2,
@@ -839,6 +840,11 @@ class RealMatchParser {
               analysis: match.analysis,
               source: match.source,
               match_date: match.match_date,
+              prediction: match.prediction,
+              competition: match.competition,
+              game: match.game, // For esports
+              venue: match.venue,
+              status: 'scheduled',
               updated_at: new Date()
             }
           },
