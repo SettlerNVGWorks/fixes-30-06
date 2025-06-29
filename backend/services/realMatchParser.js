@@ -1613,7 +1613,7 @@ class RealMatchParser {
     return fallbackMatches;
   }
 
-  // Save matches to database (using MongoDB)
+  // Save matches to database (using MongoDB) with status support
   async saveMatchesToDatabase(matches) {
     try {
       const db = getDatabase();
@@ -1623,7 +1623,7 @@ class RealMatchParser {
           { 
             team1: match.team1,
             team2: match.team2,
-            match_date: match.match_date
+            match_time: match.match_time // Use exact match time for uniqueness
           },
           { 
             $set: {
@@ -1631,7 +1631,7 @@ class RealMatchParser {
               sport: match.sport,
               team1: match.team1,
               team2: match.team2,
-              match_time: match.match_time,
+              match_time: match.match_time, // Keep original REAL time
               odds_team1: match.odds_team1,
               odds_team2: match.odds_team2,
               odds_draw: match.odds_draw,
@@ -1645,7 +1645,8 @@ class RealMatchParser {
               logo_team1: match.logo_team1,
               logo_team2: match.logo_team2,
               realism_score: match.realism_score,
-              status: 'scheduled',
+              status: match.status || 'scheduled',
+              real_api_source: true, // Flag to indicate this is from real API
               updated_at: new Date()
             }
           },
