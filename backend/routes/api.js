@@ -3,7 +3,7 @@ const { pool } = require('../database_enhanced');
 const MatchParser = require('../services/realMatchParser');
 
 const router = express.Router();
-const matchParser = new MatchParser();
+const matchParser = new RealMatchParser();
 
 // Sample predictions data (will be seeded into database)
 const samplePredictions = [
