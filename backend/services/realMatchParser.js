@@ -1296,7 +1296,7 @@ class RealMatchParser {
     return matches;
   }
 
-  // Main function to get all today's matches (limit 2 per sport)
+  // Main function to get all today's matches (limit 2 per sport, REAL DATA ONLY)
   async getTodayMatches() {
     const cacheKey = `real_matches_${this.getTodayString().iso}`;
     
@@ -1306,7 +1306,7 @@ class RealMatchParser {
     }
 
     try {
-      console.log('🔍 Fetching real matches from APIs...');
+      console.log('🔍 Fetching ONLY real matches from APIs (no mock data)...');
       
       // Get matches from different sources in parallel
       const [footballMatches, baseballMatches, hockeyMatches, esportsMatches] = await Promise.all([
@@ -1316,13 +1316,13 @@ class RealMatchParser {
         this.parseEsportsMatches()
       ]);
       
-      // Limit to 2 matches per sport
-      const limitedFootball = footballMatches.slice(0, 2);
-      const limitedBaseball = baseballMatches.slice(0, 2);
-      const limitedHockey = hockeyMatches.slice(0, 2);
-      const limitedEsports = esportsMatches.slice(0, 2);
+      // Filter out any non-real matches and limit to 2 per sport
+      const limitedFootball = footballMatches.filter(m => this.isRealMatch(m)).slice(0, 2);
+      const limitedBaseball = baseballMatches.filter(m => this.isRealMatch(m)).slice(0, 2);
+      const limitedHockey = hockeyMatches.filter(m => this.isRealMatch(m)).slice(0, 2);
+      const limitedEsports = esportsMatches.filter(m => this.isRealMatch(m)).slice(0, 2);
       
-      // Combine all matches
+      // Combine all REAL matches only
       let allMatches = [
         ...limitedFootball,
         ...limitedBaseball,
@@ -1330,16 +1330,23 @@ class RealMatchParser {
         ...limitedEsports
       ];
       
+      // If no real matches found, return empty array (no fallback)
+      if (allMatches.length === 0) {
+        console.log('⚠️ No real matches found from any API source');
+        return [];
+      }
+      
       // Add odds to all matches
       allMatches = await this.parseOddsForMatches(allMatches);
       
-      // Add analysis and additional data including team logos
+      // Add analysis and additional data while preserving REAL match times
       for (let match of allMatches) {
         const baseAnalysis = await this.getRandomAnalysisBySport(match.sport);
         match.analysis = this.addBettingRecommendation(baseAnalysis, match);
         match.match_date = this.getTodayString().iso;
         match.prediction = this.generatePrediction(match);
         match.id = this.generateMatchId(match);
+        
         // Add team logos if not already present
         if (!match.logo_team1) {
           match.logo_team1 = this.getTeamLogoUrl(match.team1, match.sport);
@@ -1347,7 +1354,9 @@ class RealMatchParser {
         if (!match.logo_team2) {
           match.logo_team2 = this.getTeamLogoUrl(match.team2, match.sport);
         }
-        // Add realism score for tracking
+        
+        // Determine match status based on real time
+        match.status = this.getMatchStatus(match.match_time);
         match.realism_score = this.calculateRealismScore(match);
       }
       
@@ -1355,20 +1364,21 @@ class RealMatchParser {
       const totalRealism = allMatches.reduce((sum, match) => sum + match.realism_score, 0);
       const realismPercentage = Math.round((totalRealism / allMatches.length) * 100);
       
-      console.log(`✅ Successfully parsed ${allMatches.length} matches (limited to 2 per sport):`);
+      console.log(`✅ Successfully parsed ${allMatches.length} REAL matches (limited to 2 per sport):`);
       console.log(`   ⚽ Футбол: ${limitedFootball.length} (${this.getSourceType(limitedFootball)})`);
       console.log(`   ⚾ Бейсбол: ${limitedBaseball.length} (${this.getSourceType(limitedBaseball)})`);
       console.log(`   🏒 Хоккей: ${limitedHockey.length} (${this.getSourceType(limitedHockey)})`);
       console.log(`   🎮 Киберспорт: ${limitedEsports.length} (${this.getSourceType(limitedEsports)})`);
-      console.log(`   📊 Общий процент реальности: ${realismPercentage}%`);
+      console.log(`   📊 Процент реальности: ${realismPercentage}% (ТОЛЬКО РЕАЛЬНЫЕ ДАННЫЕ)`);
       
       this.setCacheData(cacheKey, allMatches);
       return allMatches;
 
     } catch (error) {
       console.error('❌ Error getting real matches:', error);
-      // Fallback to mock data
-      return this.generateFallbackMatches();
+      // NO FALLBACK - return empty array instead of mock data
+      console.log('🚫 No fallback data - returning empty array (real data only policy)');
+      return [];
     }
   }
 
