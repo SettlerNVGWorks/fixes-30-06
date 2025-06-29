@@ -102,6 +102,9 @@ class RealMatchParser {
     if (apiName === 'football') {
       // 10 calls per minute limit
       return now - lastCall > 6000; // 6 seconds between calls
+    } else if (apiName === 'footballAPI') {
+      // 100 calls per day - be conservative (1 call per hour max)
+      return now - lastCall > 3600000; // 1 hour between calls
     } else if (apiName === 'odds') {
       // 500 calls per month - be very conservative
       return now - lastCall > 300000; // 5 minutes between calls
@@ -111,6 +114,9 @@ class RealMatchParser {
     } else if (apiName === 'hockey') {
       // 30 calls per minute
       return now - lastCall > 2000; // 2 seconds between calls
+    } else if (apiName === 'hockeyBall') {
+      // 5 calls per minute on BALLDONTLIE free tier
+      return now - lastCall > 12000; // 12 seconds between calls
     } else if (apiName === 'esports') {
       // 10 calls per minute on free tier
       return now - lastCall > 6000; // 6 seconds between calls
