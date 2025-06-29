@@ -365,6 +365,17 @@ const TodayMatches = () => {
             </a>
           </div>
         </div>
+        
+        {/* Real Data Info */}
+        <div className="text-center mt-8">
+          <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
+            <span className="text-green-400">✅</span>
+            <span className="text-green-300 text-sm font-medium">100% реальные данные из официальных API</span>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Обновления: 09:00 и 19:00 МСК | Без мок-данных
+          </p>
+        </div>
       </div>
     </section>
   );
