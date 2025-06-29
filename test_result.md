@@ -300,6 +300,9 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ TESTED: Logo service is working correctly with proper fallback chain. The service tries multiple sources (SportsDB, Wikipedia, Logo.dev) and falls back to placeholder generation if needed. The /api/logos/team/{teamName}/{sport} endpoint returns logos for both known and unknown teams."
+      - working: true
+        agent: "testing"
+        comment: "✅ RETESTED: Logo service is working correctly for all sports (football, baseball, hockey, esports). The service properly fetches logos from multiple sources and falls back to placeholder generation when needed. All team logos are being properly returned in the /api/matches/today endpoint."
         
   - task: "Logo Management APIs"
     implemented: true
