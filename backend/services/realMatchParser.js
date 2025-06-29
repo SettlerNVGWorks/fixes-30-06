@@ -564,8 +564,8 @@ class RealMatchParser {
         source: 'api-football',
         venue: 'Santiago Bernabeu',
         referee: 'Carlos Del Cerro Grande',
-        logo_team1: this.getTeamLogoUrl('Real Madrid', 'football'),
-        logo_team2: this.getTeamLogoUrl('Barcelona', 'football')
+        logo_team1: await this.getTeamLogoUrl('Real Madrid', 'football'),
+        logo_team2: await this.getTeamLogoUrl('Barcelona', 'football')
       },
       {
         sport: 'football',
@@ -576,8 +576,8 @@ class RealMatchParser {
         source: 'api-football',
         venue: 'Etihad Stadium',
         referee: 'Michael Oliver',
-        logo_team1: this.getTeamLogoUrl('Manchester City', 'football'),
-        logo_team2: this.getTeamLogoUrl('Liverpool', 'football')
+        logo_team1: await this.getTeamLogoUrl('Manchester City', 'football'),
+        logo_team2: await this.getTeamLogoUrl('Liverpool', 'football')
       }
     ];
   }
