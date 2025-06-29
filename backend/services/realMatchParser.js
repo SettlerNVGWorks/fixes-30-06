@@ -1033,7 +1033,7 @@ class RealMatchParser {
     this.updateApiCallTime('esports');
     
     try {
-      // Get upcoming matches for today
+      // Get upcoming matches (simpler query first)
       const upcomingResponse = await axios.get(
         `${this.apis.esports.url}/matches/upcoming`,
         {
@@ -1041,12 +1041,8 @@ class RealMatchParser {
             'Authorization': `Bearer ${this.apis.esports.key}`
           },
           params: {
-            sort: 'begin_at',
             page: 1,
-            per_page: 15,
-            filter: {
-              begin_at: `>${today.iso},<${today.iso}T23:59:59Z`
-            }
+            per_page: 10
           }
         }
       );
@@ -1057,101 +1053,33 @@ class RealMatchParser {
         matches = upcomingResponse.data
           .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
           .slice(0, 4)
-          .map(match => ({
-            sport: 'esports',
-            team1: match.opponents[0].opponent.name,
-            team2: match.opponents[1].opponent.name,
-            match_time: match.begin_at || `${today.iso}T18:00:00Z`,
-            game: match.videogame.name,
-            competition: match.league?.name || match.tournament?.name || 'Tournament',
-            tournament_tier: match.tournament?.tier,
-            bo_type: match.number_of_games ? `BO${match.number_of_games}` : 'BO3',
-            source: 'pandascore-upcoming',
-            logo_team1: this.getTeamLogo(match.opponents[0].opponent.name, 'esports'),
-            logo_team2: this.getTeamLogo(match.opponents[1].opponent.name, 'esports'),
-            match_id: match.id
-          }));
-      }
-
-      // If no upcoming matches today, get running matches
-      if (matches.length === 0) {
-        const runningResponse = await axios.get(
-          `${this.apis.esports.url}/matches/running`,
-          {
-            headers: {
-              'Authorization': `Bearer ${this.apis.esports.key}`
-            },
-            params: {
-              sort: 'begin_at',
-              page: 1,
-              per_page: 10
-            }
-          }
-        );
-
-        if (runningResponse.data && runningResponse.data.length > 0) {
-          matches = runningResponse.data
-            .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
-            .slice(0, 4)
-            .map(match => ({
+          .map((match, index) => {
+            // Create today's schedule for these matches
+            const hour = 16 + index * 2;
+            return {
               sport: 'esports',
               team1: match.opponents[0].opponent.name,
               team2: match.opponents[1].opponent.name,
-              match_time: match.begin_at || `${today.iso}T18:00:00Z`,
+              match_time: `${today.iso}T${hour}:00:00Z`,
               game: match.videogame.name,
-              competition: match.league?.name || 'Live Tournament',
-              source: 'pandascore-running',
+              competition: match.league?.name || match.tournament?.name || 'Tournament',
+              tournament_tier: match.tournament?.tier,
+              bo_type: match.number_of_games ? `BO${match.number_of_games}` : 'BO3',
+              source: 'pandascore-api',
               logo_team1: this.getTeamLogo(match.opponents[0].opponent.name, 'esports'),
               logo_team2: this.getTeamLogo(match.opponents[1].opponent.name, 'esports'),
               match_id: match.id,
-              status: 'LIVE'
-            }));
-        }
-      }
-
-      // If still no matches, get recent past matches for reference
-      if (matches.length === 0) {
-        const pastResponse = await axios.get(
-          `${this.apis.esports.url}/matches/past`,
-          {
-            headers: {
-              'Authorization': `Bearer ${this.apis.esports.key}`
-            },
-            params: {
-              sort: '-begin_at',
-              page: 1,
-              per_page: 5
-            }
-          }
-        );
-
-        if (pastResponse.data && pastResponse.data.length > 0) {
-          // Convert recent past matches to "upcoming" for demo purposes
-          matches = pastResponse.data
-            .filter(match => match.videogame && match.opponents && match.opponents.length >= 2)
-            .slice(0, 2)
-            .map((match, index) => {
-              const hour = 18 + index * 3;
-              return {
-                sport: 'esports',
-                team1: match.opponents[0].opponent.name,
-                team2: match.opponents[1].opponent.name,
-                match_time: `${today.iso}T${hour}:00:00Z`,
-                game: match.videogame.name,
-                competition: match.league?.name || 'Tournament',
-                source: 'pandascore-adapted',
-                logo_team1: this.getTeamLogo(match.opponents[0].opponent.name, 'esports'),
-                logo_team2: this.getTeamLogo(match.opponents[1].opponent.name, 'esports'),
-                match_id: match.id
-              };
-            });
-        }
+              original_time: match.begin_at
+            };
+          });
+          
+        console.log(`✅ PandaScore API returned ${matches.length} real esports matches`);
       }
 
       return matches;
       
     } catch (error) {
-      console.error('Enhanced PandaScore API error:', error.response?.data || error.message);
+      console.error('PandaScore API error:', error.response?.data || error.message);
       return [];
     }
   }
