@@ -292,6 +292,12 @@ const TodayMatches = () => {
                             {formatMatchTime(match.match_time)}
                           </div>
                           <div className="text-xs text-gray-400">МСК</div>
+                          
+                          {/* Match Status */}
+                          <div className={`mt-2 inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-semibold ${getMatchStatus(match).bgColor} ${getMatchStatus(match).color}`}>
+                            <span>{getMatchStatus(match).icon}</span>
+                            <span>{getMatchStatus(match).text}</span>
+                          </div>
                         </div>
                       </div>
 
