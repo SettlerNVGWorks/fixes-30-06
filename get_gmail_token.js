@@ -1,9 +1,9 @@
 const { google } = require('googleapis');
 const readline = require('readline');
 
-// Замените эти значения на ваши
-const CLIENT_ID = 'ваш-client-id.apps.googleusercontent.com';
-const CLIENT_SECRET = 'ваш-client-secret';
+// Ваши OAuth2 credentials
+const CLIENT_ID = '1086782786573-pl9gfri1tmp0t8gdqu3007b990969fad.apps.googleusercontent.com';
+const CLIENT_SECRET = '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';
 const REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob';
 
 const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
