@@ -29,27 +29,12 @@ const MainApp = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Video loading state
-  const [videoLoaded, setVideoLoaded] = useState(false);
-
   const [stats, setStats] = useState({
     totalPredictions: 1247,
     successRate: 78.5,
     activeBettors: 5892,
     monthlyWins: 342
   });
-
-  // Preload video on component mount
-  useEffect(() => {
-    const video = document.createElement('video');
-    video.src = logoVideo;
-    video.preload = 'auto';
-    video.addEventListener('canplaythrough', () => {
-      setVideoLoaded(true);
-      console.log('✅ Видео предзагружено');
-    });
-    video.load();
-  }, []);
 
   // Check for existing token on component mount
   useEffect(() => {
