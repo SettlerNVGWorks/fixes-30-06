@@ -1,0 +1,13 @@
+# Ngrok configuration file
+version: "2"
+authtoken: # Your auth token will be here
+
+tunnels:
+  frontend:
+    addr: 3000
+    proto: http
+    host_header: localhost:3000
+  backend:
+    addr: 8001
+    proto: http
+    host_header: localhost:8001
