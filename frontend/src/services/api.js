@@ -7,7 +7,18 @@ const getBackendURL = () => {
     return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   }
   
-  // For ngrok or any other domain, use relative URLs (proxy will handle it)
+  // For ngrok domains, construct the backend URL by changing port
+  if (window.location.hostname.includes('ngrok')) {
+    // Get current protocol and host, but change port to 8001
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    // For ngrok, we need to create a separate tunnel for backend
+    // For now, use the same hostname but different subdomain approach won't work
+    // So we'll create two ngrok tunnels
+    return `${protocol}//${hostname.replace(/^\d+/, '8001')}`;
+  }
+  
+  // For any other domain, use relative URLs (proxy will handle it)
   return '';  // Empty string means relative URLs
 };
 
