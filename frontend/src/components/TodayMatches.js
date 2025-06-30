@@ -343,7 +343,7 @@ const TodayMatches = () => {
 
         {/* CTA */}
         <div className="text-center mt-12">
-          <div className="bg-gradient-to-r from-gold-400/20 to-gold-600/20 rounded-xl p-6 border border-gold-500/30">
+          <div className="bg-gradient-to-r from-[#0088cc]/20 to-[#0088cc]/30 rounded-xl p-6 border border-[#0088cc]/40">
             <h4 className="text-2xl font-bold text-white mb-3">Хотите больше анализов?</h4>
             <p className="text-gray-300 mb-4">
               Получите детальные прогнозы и эксклюзивную аналитику в нашем VIP-канале
@@ -352,9 +352,9 @@ const TodayMatches = () => {
               href="https://t.me/+UD8DYv3MgfUxNWU6"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 bg-gradient-to-r from-gold-400 to-gold-600 text-white px-6 py-3 rounded-lg font-bold hover:from-gold-500 hover:to-gold-700 transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center justify-center bg-[#0088cc] text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-[#0077bb] transition-all duration-300 transform hover:scale-105 shadow-lg min-w-[200px]"
             >
-              <span>📈 Присоединиться к VIP</span>
+              <span>Забрать</span>
             </a>
           </div>
         </div>
