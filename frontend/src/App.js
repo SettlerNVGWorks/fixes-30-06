@@ -228,7 +228,14 @@ const MainApp = () => {
                   loop
                   muted
                   playsInline
+                  preload="auto"
                   className="w-full h-auto object-cover rounded-xl shadow-2xl"
+                  style={{
+                    background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)',
+                    minHeight: '200px'
+                  }}
+                  onLoadStart={() => console.log('Видео начало загружаться')}
+                  onCanPlay={() => console.log('Видео готово к воспроизведению')}
                 />
               </div>
               <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl mx-auto">
