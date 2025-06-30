@@ -275,24 +275,6 @@ const MainApp = () => {
         </div>
       </section>
 
-      {/* Video Section */}
-      <section className="py-12 bg-gradient-to-b from-gray-900 to-black">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <div className="w-full max-w-2xl mx-auto mb-6">
-              <video
-                src={logoVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-auto object-cover rounded-xl shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Today's Matches Section */}
       <TodayMatches />
 
