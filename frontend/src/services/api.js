@@ -1,11 +1,35 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+// Smart backend URL detection
+const getBackendURL = () => {
+  // If we're on localhost, use the env variable
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+  }
+  
+  // If we're on ngrok or any other domain, use relative URLs with current protocol/host
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  const port = window.location.port;
+  
+  // For ngrok, use the same domain but different port or proxy
+  if (hostname.includes('ngrok')) {
+    // Assume backend is available at the same ngrok URL
+    return `${protocol}//${hostname}`;
+  }
+  
+  // Default fallback: use current origin
+  return window.location.origin;
+};
+
+const API_BASE_URL = getBackendURL();
 
 console.log('🔗 API Base URL:', API_BASE_URL);
 console.log('🌐 Environment Variables:', {
   REACT_APP_BACKEND_URL: process.env.REACT_APP_BACKEND_URL,
-  NODE_ENV: process.env.NODE_ENV
+  NODE_ENV: process.env.NODE_ENV,
+  hostname: window.location.hostname,
+  protocol: window.location.protocol
 });
 
 // Create axios instance
