@@ -7,19 +7,8 @@ const getBackendURL = () => {
     return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
   }
   
-  // If we're on ngrok or any other domain, use relative URLs with current protocol/host
-  const protocol = window.location.protocol;
-  const hostname = window.location.hostname;
-  const port = window.location.port;
-  
-  // For ngrok, use the same domain but different port or proxy
-  if (hostname.includes('ngrok')) {
-    // Assume backend is available at the same ngrok URL
-    return `${protocol}//${hostname}`;
-  }
-  
-  // Default fallback: use current origin
-  return window.location.origin;
+  // For ngrok or any other domain, use relative URLs (proxy will handle it)
+  return '';  // Empty string means relative URLs
 };
 
 const API_BASE_URL = getBackendURL();
@@ -29,7 +18,8 @@ console.log('🌐 Environment Variables:', {
   REACT_APP_BACKEND_URL: process.env.REACT_APP_BACKEND_URL,
   NODE_ENV: process.env.NODE_ENV,
   hostname: window.location.hostname,
-  protocol: window.location.protocol
+  protocol: window.location.protocol,
+  isNgrok: window.location.hostname.includes('ngrok')
 });
 
 // Create axios instance
