@@ -219,11 +219,18 @@ const MainApp = () => {
         ></div>
         <div className="relative container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Logo Section */}
+            {/* Logo Section with Video */}
             <div className="mb-8">
-              <h2 className="text-5xl md:text-6xl font-bold text-white mb-2 leading-tight">
-                ПРОГНОЗЫ
-              </h2>
+              <div className="w-full max-w-md mx-auto mb-6">
+                <video
+                  src={logoVideo}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-auto object-cover rounded-xl shadow-2xl"
+                />
+              </div>
               <div className="text-3xl md:text-4xl font-bold mb-4">
                 <span className="text-white">НА </span>
                 <span className="text-white">СПОРТ</span>
