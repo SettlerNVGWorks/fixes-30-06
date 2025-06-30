@@ -27,15 +27,33 @@ app.use(helmet({
 }));
 app.use(limiter);
 
-// CORS Configuration - ОБНОВЛЕНО ДЛЯ ЛОКАЛЬНОЙ РАБОТЫ
+// CORS Configuration - ОБНОВЛЕНО ДЛЯ NGROK И ЛОКАЛЬНОЙ РАБОТЫ
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:3001',
-    'http://127.0.0.1:3001',
-    process.env.FRONTEND_URL || 'http://localhost:3000'
-  ],
+  origin: function(origin, callback) {
+    // Разрешаем запросы без origin (например, мобильные приложения)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3001',
+      process.env.FRONTEND_URL || 'http://localhost:3000'
+    ];
+    
+    // Разрешаем все ngrok домены
+    if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io') || origin.includes('ngrok.app')) {
+      return callback(null, true);
+    }
+    
+    // Проверяем стандартные домены
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    
+    console.log('🚫 CORS blocked origin:', origin);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
