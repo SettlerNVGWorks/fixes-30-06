@@ -9,6 +9,24 @@
         <!-- Preload critical video for faster loading -->
         <link rel="preload" href="%PUBLIC_URL%/static/media/main-vid.mp4" as="video" type="video/mp4">
         
+        <!-- Additional caching headers -->
+        <meta http-equiv="Cache-Control" content="public, max-age=31536000">
+        
+        <script>
+        // Aggressive video caching
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/video-cache-sw.js')
+              .then(function(registration) {
+                console.log('✅ Video cache SW registered');
+              })
+              .catch(function(registrationError) {
+                console.log('Video cache SW registration failed: ', registrationError);
+              });
+          });
+        }
+        </script>
+        
         <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
