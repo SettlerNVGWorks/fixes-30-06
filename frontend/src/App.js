@@ -380,20 +380,50 @@ const MainApp = () => {
 
       {/* Footer */}
       <footer className="bg-black py-12 border-t border-gold-500/20">
-        <div className="container mx-auto px-4 text-center">
-          <div className="flex items-center justify-center space-x-4 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-b from-gold-300 to-gold-600 rounded-lg flex items-center justify-center">
-            <img src={crownImage} alt="Crown" className="w-6 h-6 object-contain" />
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-b from-gold-300 to-gold-600 rounded-lg flex items-center justify-center">
+              <img src={crownImage} alt="Crown" className="w-6 h-6 object-contain" />
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-white">ПРОГНОЗЫ НА СПОРТ №1</h4>
+              </div>
             </div>
-            <div>
-              <h4 className="text-xl font-bold text-white">ПРОГНОЗЫ НА СПОРТ №1</h4>
-            </div>
+            <p className="text-gray-300 mb-6 text-lg">
+              Лучшие аналитики мира • Профессиональные спортивные прогнозы
+            </p>
           </div>
-          <p className="text-gray-300 mb-6 text-lg">
-            Лучшие аналитики мира • Профессиональные спортивные прогнозы
-          </p>
-          <div className="text-gray-400 text-sm">
-            © 2025 Прогнозы на спорт №1. Все права защищены.
+
+          {/* Document Links */}
+          <div className="flex flex-wrap justify-center items-center space-x-6 mb-6 text-sm">
+            <button
+              onClick={() => setShowTerms(true)}
+              className="text-gray-400 hover:text-white underline transition-colors"
+            >
+              Условия сотрудничества
+            </button>
+            <button
+              onClick={() => setShowUserAgreement(true)}
+              className="text-gray-400 hover:text-white underline transition-colors"
+            >
+              Пользовательское соглашение
+            </button>
+            <button
+              onClick={() => setShowPrivacyPolicy(true)}
+              className="text-gray-400 hover:text-white underline transition-colors"
+            >
+              Политика конфиденциальности
+            </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-gray-300 mb-4">
+              NHLKHLBET не проводит и не является организатором игр на деньги. Вся информация носит ознакомительный характер. Возрастное ограничение 18+
+            </p>
+            <div className="text-gray-400 text-sm">
+              © 2025 Прогнозы на спорт №1. Все права защищены.
+            </div>
           </div>
         </div>
       </footer>
