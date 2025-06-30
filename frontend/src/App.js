@@ -19,6 +19,11 @@ const MainApp = () => {
   const [showFAQ, setShowFAQ] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [showBot, setShowBot] = useState(false);
+  
+  // Document modal states
+  const [showTerms, setShowTerms] = useState(false);
+  const [showUserAgreement, setShowUserAgreement] = useState(false);
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
 
   // Authentication states
   const [isLoggedIn, setIsLoggedIn] = useState(false);
