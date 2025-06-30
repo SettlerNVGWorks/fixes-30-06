@@ -221,7 +221,7 @@ const MainApp = () => {
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo Section with Video */}
             <div className="mb-8">
-              <div className="w-full max-w-md mx-auto mb-6">
+              <div className="w-full max-w-3xl mx-auto mb-6">
                 <video
                   src={logoVideo}
                   autoPlay
@@ -230,11 +230,6 @@ const MainApp = () => {
                   playsInline
                   className="w-full h-auto object-cover rounded-xl shadow-2xl"
                 />
-              </div>
-              <div className="text-3xl md:text-4xl font-bold mb-4">
-                <span className="text-white">НА </span>
-                <span className="text-white">СПОРТ</span>
-                <span className="text-blue-400"> №1</span>
               </div>
               <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl mx-auto">
                 Лучшие аналитики мира предоставляют экспертные прогнозы на бейсбол и хоккей.
