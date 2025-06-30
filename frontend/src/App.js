@@ -236,7 +236,15 @@ const MainApp = () => {
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo Section with Video */}
             <div className="mb-8">
-              <div className="w-full max-w-3xl mx-auto mb-6">
+              <div className="w-full max-w-3xl mx-auto mb-6 relative">
+                {!videoLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-900 to-blue-700 rounded-xl">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+                      <p className="text-white font-semibold">Загрузка видео...</p>
+                    </div>
+                  </div>
+                )}
                 <video
                   src={logoVideo}
                   autoPlay
@@ -244,13 +252,20 @@ const MainApp = () => {
                   muted
                   playsInline
                   preload="auto"
-                  className="w-full h-auto object-cover rounded-xl shadow-2xl"
+                  className={`w-full h-auto object-cover rounded-xl shadow-2xl transition-opacity duration-500 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
                   style={{
                     background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)',
                     minHeight: '200px'
                   }}
-                  onLoadStart={() => console.log('Видео начало загружаться')}
-                  onCanPlay={() => console.log('Видео готово к воспроизведению')}
+                  onLoadStart={() => console.log('🔄 Видео начало загружаться')}
+                  onCanPlay={() => {
+                    console.log('✅ Видео готово к воспроизведению');
+                    setVideoLoaded(true);
+                  }}
+                  onError={(e) => {
+                    console.error('❌ Ошибка загрузки видео:', e);
+                    setVideoLoaded(true); // Show fallback
+                  }}
                 />
               </div>
               <p className="text-xl text-gray-200 mb-8 leading-relaxed max-w-3xl mx-auto">
