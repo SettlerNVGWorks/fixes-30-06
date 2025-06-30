@@ -2,24 +2,38 @@ import axios from 'axios';
 
 // Smart backend URL detection
 const getBackendURL = () => {
-  // If we're on localhost, use the env variable
+  console.log('🔍 Detecting backend URL...');
+  console.log('   hostname:', window.location.hostname);
+  console.log('   protocol:', window.location.protocol);
+  
+  // For localhost, use direct backend URL
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+    const url = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+    console.log('   → Using localhost backend:', url);
+    return url;
   }
   
-  // For ngrok domains, we need to use a different approach
-  // The user should set REACT_APP_BACKEND_URL_NGROK when using ngrok
-  if (window.location.hostname.includes('ngrok')) {
-    // Check if there's a specific ngrok backend URL set
+  // For external tunnels (ngrok, localtunnel, etc.), use current domain + direct backend port
+  if (window.location.hostname.includes('ngrok') || 
+      window.location.hostname.includes('loca.lt') || 
+      window.location.hostname.includes('trycloudflare.com')) {
+    
+    // Check if there's a specific tunnel backend URL set
     if (process.env.REACT_APP_BACKEND_URL_NGROK) {
+      console.log('   → Using tunnel backend URL:', process.env.REACT_APP_BACKEND_URL_NGROK);
       return process.env.REACT_APP_BACKEND_URL_NGROK;
     }
-    // Otherwise try to proxy through current domain
-    return window.location.origin;
+    
+    // Otherwise use the direct backend URL (this won't work for tunnels)
+    const directUrl = 'http://localhost:8001';
+    console.log('   → Using direct backend (may not work for tunnels):', directUrl);
+    return directUrl;
   }
   
-  // For any other domain, use the current origin
-  return window.location.origin;
+  // For any other domain, use current origin (for production)
+  const origin = window.location.origin;
+  console.log('   → Using current origin:', origin);
+  return origin;
 };
 
 const API_BASE_URL = getBackendURL();
